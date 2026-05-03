@@ -126,10 +126,6 @@ Route::middleware(['auth', 'admin'])
         Route::get('leads/export', [Admin\LeadController::class, 'export'])->name('leads.export');
         Route::get('leads/waitlist/export', [Admin\LeadController::class, 'exportWaitlist'])->name('leads.waitlist.export');
 
-        // Skin quiz submissions
-        Route::get('quiz-responses', [Admin\QuizResponseController::class, 'index'])->name('quiz-responses.index');
-        Route::get('quiz-responses/{quiz_session}', [Admin\QuizResponseController::class, 'show'])->name('quiz-responses.show');
-
         // Pages / CMS
         Route::resource('pages', Admin\PageController::class)->except(['show']);
     });

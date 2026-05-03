@@ -16,27 +16,15 @@
 @section('content')
 
 {{-- ── Hero Banner ──────────────────────────────────────────────────────── --}}
-<section class="relative pt-[72px] overflow-hidden min-h-[42vh]">
-    <div class="absolute inset-0 z-0">
-        <img
-            src="{{ file_exists(public_path('images/shop-hero.jpg')) ? asset('images/shop-hero.jpg') : config('ferro.page_backgrounds.heroes.shop') }}"
-            alt=""
-            class="w-full h-full object-cover object-center opacity-[0.22]"
-            width="2400"
-            height="1200"
-            loading="eager"
-            fetchpriority="high"
-            aria-hidden="true"
-        >
-        <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/80 via-ferro-obsidian/90 to-ferro-black"></div>
-    </div>
+<section class="relative pt-[72px] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-ferro-obsidian to-ferro-black"></div>
     {{-- subtle grid lines --}}
-    <div class="absolute inset-0 z-[1] opacity-[0.04]"
+    <div class="absolute inset-0 opacity-[0.04]"
          style="background-image: linear-gradient(var(--color-ferro-silver,#B0B0B0) 1px, transparent 1px),
                                    linear-gradient(90deg, var(--color-ferro-silver,#B0B0B0) 1px, transparent 1px);
                 background-size: 60px 60px;"></div>
 
-    <div class="container-ferro relative z-10 py-20 text-center">
+    <div class="container-ferro relative py-20 text-center">
         <p class="eyebrow mb-4">{{ $isAr ? 'مجموعتنا' : 'The Collection' }}</p>
         <h1 class="font-display text-5xl md:text-7xl font-semibold tracking-wide text-ferro-white leading-none mb-6">
             {{ $isAr ? 'العناية الفاخرة' : 'Luxury' }}

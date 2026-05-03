@@ -3,16 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Events\LeadRegistered;
-use App\Mail\Admin\QuizSubmissionAlert;
 use App\Models\Lead;
-use App\Models\QuizSession;
+use App\Models\Product;
 use App\Models\WaitlistEntry;
-use App\Services\QuizRecommendationEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -97,100 +93,34 @@ class LeadController extends Controller
 
     /**
      * POST /quiz/capture
-     * Skincare quiz: anonymous step returns profile + products; with email persists lead, session, and notifies admins.
+     * Capture lead email from skincare quiz (Advanced Feature #2).
      */
-    public function storeQuizLead(Request $request, QuizRecommendationEngine $engine): JsonResponse
+    public function storeQuizLead(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email'              => ['nullable', 'email', 'max:255'],
-            'answers'            => ['nullable', 'array'],
-            'quiz_results'       => ['nullable', 'array'],
+            'email'              => ['required', 'email'],
+            'quiz_results'       => ['required', 'array'],
+            'skin_profile'       => ['nullable', 'string', 'max:100'],
             'preferred_language' => ['nullable', Rule::in(['en', 'ar'])],
         ]);
-
-        $answers = $validated['answers'] ?? $validated['quiz_results'] ?? null;
-        if ($answers === null || ! is_array($answers) || count($answers) < 1) {
-            return response()->json(['message' => 'Quiz answers are required.'], 422);
-        }
-
-        $normalized = [];
-        foreach ($answers as $key => $value) {
-            if (is_string($value) && $value !== '') {
-                $normalized[(int) $key] = $value;
-            }
-        }
-        ksort($normalized);
-
-        $locale   = $validated['preferred_language'] ?? $request->input('locale') ?? 'en';
-        $analysis = $engine->analyzeFromUiAnswers($normalized);
-
-        if (empty($validated['email'])) {
-            return response()->json([
-                'success'   => true,
-                'profile'   => $analysis['profile'],
-                'products'  => $this->quizProductsPayload($analysis['products'], $locale),
-                'tags'      => $analysis['tags'],
-            ]);
-        }
-
-        $quizResults = [
-            'answers'                   => $normalized,
-            'profile'                   => $analysis['profile'],
-            'tags'                      => $analysis['tags'],
-            'recommended_product_ids'   => $analysis['product_ids'],
-        ];
 
         $lead = Lead::updateOrCreate(
             ['email' => $validated['email']],
             [
                 'source'             => Lead::SOURCE_QUIZ,
                 'status'             => Lead::STATUS_ENGAGED,
-                'preferred_language' => $locale,
-                'quiz_results'       => $quizResults,
+                'preferred_language' => $validated['preferred_language'] ?? 'en',
+                'quiz_results'       => $validated['quiz_results'],
                 'ip_address'         => $request->ip(),
             ]
         );
 
+        // Elevate engagement score for quiz completion
         $lead->incrementEngagement(10);
-
-        QuizSession::create([
-            'session_token'             => (string) Str::uuid(),
-            'user_id'                   => $request->user()?->id,
-            'lead_id'                   => $lead->id,
-            'answers'                   => $normalized,
-            'recommended_product_ids'   => $analysis['product_ids'],
-            'skin_profile'              => $analysis['profile']['label_en'] ?? null,
-            'email_captured'            => true,
-        ]);
-
-        Mail::to(config('ferro.admin_email'))
-            ->queue((new QuizSubmissionAlert($lead))->onQueue('notifications'));
 
         LeadRegistered::dispatch($lead);
 
-        return response()->json([
-            'success'  => true,
-            'lead_id'  => $lead->id,
-            'profile'  => $analysis['profile'],
-            'products' => $this->quizProductsPayload($analysis['products'], $locale),
-        ]);
-    }
-
-    /**
-     * @param  \Illuminate\Support\Collection<int, \App\Models\Product>  $products
-     * @return list<array{id: int, name: string, slug: string, image: string|null, url: string}>
-     */
-    private function quizProductsPayload($products, string $locale): array
-    {
-        return $products->map(function ($product) use ($locale) {
-            return [
-                'id'    => $product->id,
-                'name'  => $product->getTranslation('name', $locale, false) ?: $product->name,
-                'slug'  => $product->slug,
-                'image' => $product->featured_image ? asset($product->featured_image) : null,
-                'url'   => route('products.show', $product->slug),
-            ];
-        })->values()->all();
+        return response()->json(['success' => true, 'lead_id' => $lead->id]);
     }
 
     /**
