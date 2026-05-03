@@ -78,8 +78,10 @@
     <meta name="theme-color" content="#0A0A0A">
 
     {{-- ── Vite Assets ─────────────────────────────────────────────────── --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('build/assets/app.css') }}">
 
+    <!-- The JS Script -->
+    <script type="module" src="{{ asset('build/assets/app.js') }}"></script>
     {{-- ── Page-level head additions ─────────────────────────────────── --}}
     @stack('head')
 </head>
