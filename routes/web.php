@@ -21,12 +21,23 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 // ── Language toggle ────────────────────────────────────────────────────────
 Route::get('/lang/{locale}', [LanguageController::class, 'switch'])
      ->name('lang.switch')
      ->where('locale', 'en|ar');
+
+// ── Authentication ─────────────────────────────────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/login',    [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login',   [LoginController::class, 'login']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register',[RegisterController::class, 'register']);
+});
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 // ── Public storefront ──────────────────────────────────────────────────────
 Route::get('/', HomeController::class)->name('home');

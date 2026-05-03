@@ -3,12 +3,12 @@
 @php $isAr = app()->getLocale() === 'ar'; @endphp
 
 {{-- ── SEO Meta ──────────────────────────────────────────────────────────── --}}
-@section('seo_title', $isAr
-    ? 'فيرو — مصنوع من الحديد، مصقول بالرفاهية | عناية الرجل الفاخرة'
-    : 'FERRO — Forged from Iron, Polished by Luxury | Premium Men\'s Grooming')
-@section('seo_description', $isAr
-    ? 'منتجات عناية فاخرة للرجال والرياضيين النخبة. طبيعية. قوية. لا تهادن.'
-    : 'Premium nature-powered grooming essentials engineered for the high-performance man and elite athlete. Natural. Powerful. Uncompromising.')
+@php
+    $seoTitle       = $isAr ? 'فيرو — مصنوع من الحديد، مصقول بالرفاهية | عناية الرجل الفاخرة' : 'FERRO — Forged from Iron, Polished by Luxury | Premium Men\'s Grooming';
+    $seoDescription = $isAr ? 'منتجات عناية فاخرة للرجال والرياضيين النخبة. طبيعية. قوية. لا تهادن.' : 'Premium nature-powered grooming essentials engineered for the high-performance man and elite athlete. Natural. Powerful. Uncompromising.';
+@endphp
+@section('seo_title', $seoTitle)
+@section('seo_description', $seoDescription)
 @section('og_title', 'FERRO — Forged from Iron, Polished by Luxury')
 @section('og_description', 'Premium natural grooming engineered for the elite athlete.')
 @section('og_type', 'website')
@@ -16,12 +16,12 @@
 @section('schema_org')
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@@context": "https://schema.org",
+    "@@type": "WebSite",
     "name": "FERRO",
     "url": "{{ url('/') }}",
     "potentialAction": {
-        "@type": "SearchAction",
+        "@@type": "SearchAction",
         "target": "{{ url('/shop') }}?q={search_term_string}",
         "query-input": "required name=search_term_string"
     }
@@ -43,7 +43,7 @@
     {{-- Background image with parallax --}}
     <div class="absolute inset-0 z-0" id="hero-bg">
         <img
-            src="{{ asset('images/hero-bg.webp') }}"
+            src="{{ asset('images/hero-bg.jpg') }}"
             alt=""
             class="w-full h-full object-cover object-center scale-110"
             aria-hidden="true"
@@ -186,9 +186,9 @@
                 @include('partials.product-card', ['product' => $product])
             @empty
                 {{-- Coming soon placeholder cards --}}
-                @for($i = 0; $i < 4; $i++)
+                @foreach(range(1, 4) as $i)
                     @include('partials.product-card-skeleton')
-                @endfor
+                @endforeach
             @endforelse
         </div>
     </div>
@@ -205,7 +205,7 @@
             <div class="relative reveal {{ $isAr ? 'order-2' : 'order-1' }}">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
                     <img
-                        src="{{ asset('images/brand-story.webp') }}"
+                        src="{{ asset('images/brand-story.jpg') }}"
                         alt="{{ $isAr ? 'صورة تجسّد قوة فيرو' : 'FERRO — Power and refinement' }}"
                         class="w-full h-full object-cover"
                         loading="lazy"
@@ -371,6 +371,7 @@
 @endsection
 
 @push('scripts')
+@verbatim
 <script>
 // Parallax on hero background
 (function() {
@@ -390,4 +391,5 @@
     document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
 })();
 </script>
+@endverbatim
 @endpush

@@ -36,8 +36,8 @@
     {{-- ── Schema.org — Organization (sitewide) ─────────────────────── --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Organization",
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
         "name": "FERRO",
         "url": "{{ url('/') }}",
         "logo": "{{ asset('images/ferro-logo.svg') }}",
@@ -47,7 +47,7 @@
             "https://tiktok.com/@ferrogrooming"
         ],
         "contactPoint": {
-            "@type": "ContactPoint",
+            "@@type": "ContactPoint",
             "contactType": "customer service",
             "email": "support@ferro.com"
         }
@@ -60,7 +60,17 @@
     {{-- ── Preconnect / Performance ───────────────────────────────────── --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload"    as="image" href="{{ asset('images/hero-bg.webp') }}">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preload"    as="image" href="{{ asset('images/hero-bg.jpg') }}">
+
+    {{-- ── CDN: Google Fonts ──────────────────────────────────────────── --}}
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {{-- ── CDN: Alpine.js (fallback if bundled version fails) ────────── --}}
+    {{-- Already bundled via Vite — CDN version omitted to avoid double-load --}}
+
+    {{-- ── CDN: Swiper (carousel / slider) ───────────────────────────── --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
     {{-- ── Favicon ─────────────────────────────────────────────────────── --}}
     <link rel="icon"             type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -83,14 +93,7 @@
         @yield('content')
     </main>
 
-    {{-- ── Footer ──────────────────────────────────────────────────────── --}}
-    @include('partials.footer')
-
-    {{-- ── Toast notifications ─────────────────────────────────────────── --}}
-    @include('partials.toast')
-
-    {{-- ── Page-level scripts ──────────────────────────────────────────── --}}
-    @stack('scripts')
+  
 
 </body>
 </html>
