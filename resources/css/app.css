@@ -1,8 +1,93 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FERRO — Global Stylesheet
+   Design System: Iron Black · Forge Orange · Pure White
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
+
+/* ── CSS Custom Properties ───────────────────────────────────────────────── */
+:root {
+    --ferro-orange:       #E8500A;
+    --ferro-orange-deep:  #C43E06;
+    --ferro-orange-glow:  #FF6B2B;
+    --ferro-black:        #0A0A0A;
+    --ferro-obsidian:     #1A1A1A;
+    --ferro-carbon:       #2A2A2A;
+    --ferro-ash:          #6B6B6B;
+    --ferro-silver:       #B0B0B0;
+    --ferro-off-white:    #F5F2EE;
+    --ferro-white:        #FFFFFF;
+    --nav-height:         72px;
+    --transition-smooth:  cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+html[lang="en"] { direction: ltr; font-family: 'Inter', system-ui, sans-serif; }
+html[lang="ar"] { direction: rtl; font-family: 'Noto Kufi Arabic', 'Cairo', sans-serif; }
+body { background-color: var(--ferro-black); color: var(--ferro-off-white); }
+h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
+::selection { background-color: var(--ferro-orange); color: white; }
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--ferro-black); }
+::-webkit-scrollbar-thumb { background: var(--ferro-carbon); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ferro-orange); }
+:focus-visible { outline: 2px solid var(--ferro-orange); outline-offset: 3px; }
+
+/* ── Reveal animations (JS IntersectionObserver adds .is-visible) ────────── */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s var(--transition-smooth), transform 0.7s var(--transition-smooth);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-stagger > * { opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--transition-smooth), transform 0.6s var(--transition-smooth); }
+.reveal-stagger.is-visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0ms; }
+.reveal-stagger.is-visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:100ms; }
+.reveal-stagger.is-visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:200ms; }
+.reveal-stagger.is-visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:300ms; }
+.reveal-stagger.is-visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:400ms; }
+.reveal-stagger.is-visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:500ms; }
+
+/* ── Luxury clip-path cuts ───────────────────────────────────────────────── */
+.clip-luxury-sm  { clip-path: polygon(0 0, calc(100% - 8px)  0, 100%  8px, 100% 100%,  8px 100%, 0 calc(100% -  8px)); }
+.clip-luxury-md  { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); }
+.clip-luxury-lg  { clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)); }
+
+/* ── Text gradient ───────────────────────────────────────────────────────── */
+.text-gradient-orange {
+    background: linear-gradient(135deg, #E8500A 0%, #FF6B2B 50%, #C43E06 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Language toggle ─────────────────────────────────────────────────────── */
+.lang-toggle { display:flex; align-items:center; background:var(--ferro-carbon); border-radius:9999px; padding:2px; gap:0; }
+.lang-toggle-btn { padding:6px 16px; border-radius:9999px; font-size:0.75rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.3s; color:var(--ferro-silver); }
+.lang-toggle-btn.active { background:var(--ferro-orange); color:white; box-shadow:0 0 0 1px rgba(232,80,10,0.4); }
+.lang-toggle-btn:not(.active):hover { color:var(--ferro-white); }
+
+/* ── Waitlist card accent line ───────────────────────────────────────────── */
+.waitlist-card { position:relative; overflow:hidden; }
+.waitlist-card::before { content:''; position:absolute; top:0; inset-inline-start:0; inset-inline-end:0; height:1px; background:linear-gradient(to right, transparent, var(--ferro-orange), transparent); }
+
+/* ── Coming soon overlay ─────────────────────────────────────────────────── */
+.coming-soon-overlay { position:absolute; inset:0; background:rgba(10,10,10,0.7); backdrop-filter:blur(8px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; z-index:10; }
+
+/* ── Product image zoom ──────────────────────────────────────────────────── */
+.product-image-wrap { position:relative; overflow:hidden; background:var(--ferro-obsidian); aspect-ratio:3/4; }
+.product-image-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.7s var(--transition-smooth); }
+.card-product:hover .product-image-wrap img { transform:scale(1.05); }
+
+/* ── Print (PDF invoices) ─────────────────────────────────────────────────── */
+@media print { body { background:white; color:black; } .no-print { display:none !important; } }
 @source '../**/*.js';
 
 @theme {
