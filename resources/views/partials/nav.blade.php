@@ -9,7 +9,7 @@
 --}}
 <header
     id="site-nav"
-    class="fixed top-0 inset-x-0 z-nav transition-all duration-300"
+    class="fixed top-0 inset-x-0 z-[999] transition-all duration-300"
     style="background: transparent;"
     x-data="{ mobileOpen: false, cartCount: 0 }"
 >

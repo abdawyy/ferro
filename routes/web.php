@@ -59,7 +59,15 @@ Route::view('/contact', 'contact')->name('contact');
 Route::middleware(['auth'])->group(function () {
     Route::view('/cart', 'cart')->name('cart');
     Route::view('/checkout', 'checkout.index')->name('checkout');
-    Route::get('/account', fn () => view('account.index'))->name('account');
+    Route::get('/account', function () {
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.dashboard');
+        }
+        $orders = \App\Models\Order::where('user_id', auth()->id())
+                    ->latest()
+                    ->get();
+        return view('account.index', compact('orders'));
+    })->name('account');
     Route::get('/orders/{orderNumber}', fn (string $orderNumber) => view('account.order', [
         'order' => \App\Models\Order::where('order_number', $orderNumber)
                     ->where('user_id', auth()->id())

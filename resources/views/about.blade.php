@@ -14,7 +14,7 @@
 {{-- ── Page Hero ──────────────────────────────────────────────────────── --}}
 <section class="relative min-h-[60vh] flex items-end overflow-hidden pt-[72px]">
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset('images/about-hero.webp') }}" alt=""
+        <img src="{{ asset('images/about-hero.jpg') }}" alt=""
              class="w-full h-full object-cover object-center" aria-hidden="true" loading="eager">
         <div class="absolute inset-0 bg-gradient-to-t from-ferro-black via-ferro-black/50 to-ferro-black/10"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(232,80,10,0.1)_0%,transparent_60%)]"></div>

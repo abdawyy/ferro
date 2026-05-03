@@ -69,7 +69,7 @@ class LeadController extends Controller
             ], [
                 'lead_id'             => $lead->id,
                 'preferred_language'  => $validated['preferred_language'] ?? 'en',
-                'position'            => WaitlistEntry::where('product_id', $validated['product_id'])->count() + 1,
+                'position'            => WaitlistEntry::where('product_id', '=', $validated['product_id'], 'and')->count() + 1,
             ]);
         }
 

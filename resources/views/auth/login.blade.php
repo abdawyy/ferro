@@ -71,7 +71,7 @@
                             <label class="form-label mb-0" for="password">
                                 {{ $isAr ? 'كلمة المرور' : 'Password' }}
                             </label>
-                            <a href="{{ route('password.request') }}"
+                            <a href="#"
                                class="text-ferro-orange text-xs hover:underline underline-offset-2">
                                 {{ $isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?' }}
                             </a>

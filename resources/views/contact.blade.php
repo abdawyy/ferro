@@ -12,14 +12,24 @@
 @section('content')
 
 {{-- ── Header ──────────────────────────────────────────────────────────── --}}
-<div class="pt-[72px] bg-ferro-obsidian border-b border-ferro-carbon">
-    <div class="container-ferro py-14 md:py-20 {{ $isAr ? 'text-right' : '' }}">
+<section class="relative pt-[72px] min-h-[45vh] flex items-end overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="{{ asset('images/contact-bg.jpg') }}" alt=""
+             class="w-full h-full object-cover object-center" aria-hidden="true" loading="eager">
+        <div class="absolute inset-0 bg-gradient-to-t from-ferro-black via-ferro-black/70 to-ferro-black/20"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(232,80,10,0.08)_0%,transparent_60%)]"></div>
+    </div>
+    <div class="container-ferro relative z-10 pb-16 {{ $isAr ? 'text-right' : '' }}">
         <span class="eyebrow">{{ $isAr ? 'تواصل معنا' : 'Get in Touch' }}</span>
         <h1 class="font-display text-display-xl text-ferro-white">
             {{ $isAr ? 'نحن هنا لك' : "We're Here for You" }}
         </h1>
+        <p class="text-ferro-silver text-lg mt-3 max-w-lg">
+            {{ $isAr ? 'فريقنا جاهز للإجابة على استفساراتك.' : 'Our team is ready to answer your questions.' }}
+        </p>
     </div>
-</div>
+    <div class="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-ferro-black to-transparent pointer-events-none"></div>
+</section>
 
 <section class="section-pad">
     <div class="container-ferro">
@@ -198,6 +208,7 @@
 @endsection
 
 @push('scripts')
+@verbatim
 <script>
 function contactForm() {
     return {
@@ -235,4 +246,5 @@ function contactForm() {
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
 </script>
+@endverbatim
 @endpush

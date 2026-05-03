@@ -15,7 +15,9 @@
 
     {{-- Background --}}
     <div class="absolute inset-0 z-0 bg-ferro-black">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.06)_0%,transparent_60%)]" aria-hidden="true"></div>
+        <img src="{{ asset('images/quiz-bg.jpg') }}" alt="" class="w-full h-full object-cover object-center opacity-10" aria-hidden="true" loading="eager">
+        <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/60 via-ferro-black/80 to-ferro-black"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.10)_0%,transparent_60%)]" aria-hidden="true"></div>
     </div>
 
     <div class="container-ferro relative z-10 section-pad w-full">
@@ -176,6 +178,8 @@
 @endsection
 
 @push('scripts')
+<script>const FERRO_QUIZ_URL = '{{ route('quiz.capture') }}';</script>
+@verbatim
 <script>
 function ferroQuiz() {
     return {
@@ -252,7 +256,7 @@ function ferroQuiz() {
 
         computeProfile() {
             // Send answers to backend for recommendation engine
-            fetch('{{ route('quiz.capture') }}', {
+            fetch(FERRO_QUIZ_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -288,7 +292,7 @@ function ferroQuiz() {
 
         captureQuizLead() {
             if (!this.leadEmail) return;
-            fetch('{{ route('quiz.capture') }}', {
+            fetch(FERRO_QUIZ_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -314,4 +318,5 @@ function ferroQuiz() {
     };
 }
 </script>
+@endverbatim
 @endpush
