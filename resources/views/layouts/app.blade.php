@@ -61,7 +61,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preload"    as="image" href="{{ asset('images/hero-bg.jpg') }}">
+    <link rel="preload" as="image" href="{{ config('ferro.page_backgrounds.heroes.home') }}">
 
     {{-- ── CDN: Google Fonts ──────────────────────────────────────────── --}}
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -77,23 +77,23 @@
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
     <meta name="theme-color" content="#0A0A0A">
 
-    {{-- ── Vite Assets ─────────────────────────────────────────────────── --}}
+    {{-- ── Vite Assets (manifest-hashed CSS/JS) ─────────────────────────── --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     {{-- ── Page-level head additions ─────────────────────────────────── --}}
     @stack('head')
 </head>
-<body class="bg-ferro-black text-ferro-off-white antialiased">
+<body class="relative bg-ferro-black text-ferro-off-white antialiased">
+
+    @include('partials.page-backdrop')
 
     {{-- ── Navigation ─────────────────────────────────────────────────── --}}
     @include('partials.nav')
 
     {{-- ── Page Content ────────────────────────────────────────────────── --}}
-    <main id="main-content">
+    <main id="main-content" class="relative z-10">
         @yield('content')
     </main>
 
-  
-
+    @stack('scripts')
 </body>
 </html>

@@ -11,10 +11,19 @@
 
 @section('content')
 
+@php
+    $aboutHeroUrl = file_exists(public_path('images/about-hero.jpg'))
+        ? asset('images/about-hero.jpg')
+        : config('ferro.page_backgrounds.heroes.about');
+    $aboutStoryUrl = file_exists(public_path('images/about-story.webp'))
+        ? asset('images/about-story.webp')
+        : config('ferro.page_backgrounds.heroes.about_story');
+@endphp
+
 {{-- ── Page Hero ──────────────────────────────────────────────────────── --}}
 <section class="relative min-h-[60vh] flex items-end overflow-hidden pt-[72px]">
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset('images/about-hero.jpg') }}" alt=""
+        <img src="{{ $aboutHeroUrl }}" alt=""
              class="w-full h-full object-cover object-center" aria-hidden="true" loading="eager">
         <div class="absolute inset-0 bg-gradient-to-t from-ferro-black via-ferro-black/50 to-ferro-black/10"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(232,80,10,0.1)_0%,transparent_60%)]"></div>
@@ -71,7 +80,7 @@
             </div>
             <div class="{{ $isAr ? 'order-1' : 'order-2' }} reveal">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
-                    <img src="{{ asset('images/about-story.webp') }}"
+                    <img src="{{ $aboutStoryUrl }}"
                          alt="{{ $isAr ? 'قصة فيرو' : 'The FERRO story' }}"
                          class="w-full h-full object-cover" loading="lazy" width="600" height="750">
                     <div class="absolute inset-0 bg-gradient-to-t from-ferro-black/40 to-transparent"></div>

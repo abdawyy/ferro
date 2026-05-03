@@ -33,4 +33,39 @@ return [
         'max_emails'     => 3,
         'gap_hours'      => 24,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Page backgrounds (storefront)
+    |--------------------------------------------------------------------------
+    | Full-bleed hero fallbacks when files under public/images are absent.
+    | Route backdrop: fixed layer under content (null = skip for that route).
+    | Replace URLs with your own assets in public/images and use asset() in views.
+    */
+    'page_backgrounds' => [
+        'heroes' => [
+            'home'         => 'https://images.unsplash.com/photo-1556228578-0d385b1a4d571?auto=format&fit=crop&w=2400&q=80',
+            'about'        => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=80',
+            'contact'      => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2400&q=80',
+            'quiz'         => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=75',
+            'shop'         => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=80',
+            'brand_story'  => 'https://images.unsplash.com/photo-1608248543803-6ec288bfef52?auto=format&fit=crop&w=1600&q=80',
+            'about_story'  => 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1600&q=80',
+        ],
+        'backdrop_routes' => [
+            '__default'       => 'https://images.unsplash.com/photo-1556228578-0d385b1a4d571?auto=format&fit=crop&w=2400&q=65',
+            'home'            => null,
+            'about'           => null,
+            'contact'         => null,
+            'quiz'            => null,
+            'products.index'  => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=65',
+            'products.show'   => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=65',
+            'cart'            => 'https://images.unsplash.com/photo-1608248543803-6ec288bfef52?auto=format&fit=crop&w=2400&q=65',
+            'checkout'        => 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2400&q=65',
+            'account'         => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2400&q=65',
+            'orders.show'     => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=65',
+            'login'           => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=70',
+            'register'        => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=70',
+        ],
+    ],
 ];

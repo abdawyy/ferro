@@ -31,6 +31,15 @@
 
 @section('content')
 
+@php
+    $heroBgUrl = file_exists(public_path('images/hero-bg.jpg'))
+        ? asset('images/hero-bg.jpg')
+        : config('ferro.page_backgrounds.heroes.home');
+    $brandStoryUrl = file_exists(public_path('images/brand-story.jpg'))
+        ? asset('images/brand-story.jpg')
+        : config('ferro.page_backgrounds.heroes.brand_story');
+@endphp
+
 {{-- ────────────────────────────────────────────────────────────────────────
      SECTION 1 — HERO
      Full-viewport cinematic hero. "Iron" texture + radial orange glow.
@@ -43,7 +52,7 @@
     {{-- Background image with parallax --}}
     <div class="absolute inset-0 z-0" id="hero-bg">
         <img
-            src="{{ asset('images/hero-bg.jpg') }}"
+            src="{{ $heroBgUrl }}"
             alt=""
             class="w-full h-full object-cover object-center scale-110"
             aria-hidden="true"
@@ -205,7 +214,7 @@
             <div class="relative reveal {{ $isAr ? 'order-2' : 'order-1' }}">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
                     <img
-                        src="{{ asset('images/brand-story.jpg') }}"
+                        src="{{ $brandStoryUrl }}"
                         alt="{{ $isAr ? 'صورة تجسّد قوة فيرو' : 'FERRO — Power and refinement' }}"
                         class="w-full h-full object-cover"
                         loading="lazy"

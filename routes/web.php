@@ -117,10 +117,18 @@ Route::middleware(['auth', 'admin'])
         Route::patch('users/{user}/block', [Admin\UserController::class, 'block'])->name('users.block');
         Route::patch('users/{user}/unblock', [Admin\UserController::class, 'unblock'])->name('users.unblock');
 
+        // Admin privileges
+        Route::patch('users/{user}/make-admin', [Admin\UserController::class, 'makeAdmin'])->name('users.make-admin');
+        Route::patch('users/{user}/remove-admin', [Admin\UserController::class, 'removeAdmin'])->name('users.remove-admin');
+
         // Leads & Waitlist
         Route::get('leads', [Admin\LeadController::class, 'index'])->name('leads.index');
         Route::get('leads/export', [Admin\LeadController::class, 'export'])->name('leads.export');
         Route::get('leads/waitlist/export', [Admin\LeadController::class, 'exportWaitlist'])->name('leads.waitlist.export');
+
+        // Skin quiz submissions
+        Route::get('quiz-responses', [Admin\QuizResponseController::class, 'index'])->name('quiz-responses.index');
+        Route::get('quiz-responses/{quiz_session}', [Admin\QuizResponseController::class, 'show'])->name('quiz-responses.show');
 
         // Pages / CMS
         Route::resource('pages', Admin\PageController::class)->except(['show']);
