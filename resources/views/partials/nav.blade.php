@@ -14,7 +14,7 @@
     x-data="{ mobileOpen: false, cartCount: 0 }"
 >
     {{-- Backdrop blur applied via JS .is-scrolled class --}}
-    <div id="nav-backdrop" class="absolute inset-0 transition-all duration-300 opacity-0
+    <div id="nav-backdrop" class="absolute inset-0 transition-all duration-300 opacity-0 pointer-events-none
          bg-ferro-black/90 backdrop-blur-xl border-b border-ferro-carbon/40"
          aria-hidden="true"></div>
 
