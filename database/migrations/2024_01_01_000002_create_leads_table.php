@@ -52,7 +52,7 @@ return new class extends Migration
             $table->integer('engagement_score')->default(0); // incremented by events
             $table->timestamp('last_engaged_at')->nullable();
             $table->timestamp('converted_at')->nullable();   // when they placed first order
-            $table->foreignId('converted_order_id')->nullable()->constrained('orders')->nullOnDelete();
+            $table->unsignedBigInteger('converted_order_id')->nullable(); // FK added after orders table in migration 000003
 
             // ── Waitlist ───────────────────────────────────────────────────
             $table->boolean('on_waitlist')->default(true);

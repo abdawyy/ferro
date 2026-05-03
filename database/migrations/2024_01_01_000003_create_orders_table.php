@@ -85,6 +85,11 @@ return new class extends Migration
             $table->index('created_at');
         });
 
+        // Add FK from leads.converted_order_id → orders.id (leads table created first)
+        Schema::table('leads', function (Blueprint $table) {
+            $table->foreign('converted_order_id')->references('id')->on('orders')->nullOnDelete();
+        });
+
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
@@ -113,6 +118,9 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::table('leads', function (Blueprint $table) {
+            $table->dropForeign(['converted_order_id']);
+        });
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('orders');
     }
