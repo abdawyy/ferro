@@ -13,7 +13,7 @@
         ['label' => 'Customers',        'value' => $stats['total_customers'],                     'icon' => '👥', 'bg' => 'rgba(34,197,94,0.1)',  'sub' => $stats['blocked_users'] . ' blocked'],
         ['label' => 'Leads / Waitlist', 'value' => $stats['total_leads'],                         'icon' => '📋', 'bg' => 'rgba(234,179,8,0.1)',  'sub' => $stats['waitlist_total'] . ' on waitlist'],
     ] as $stat)
-    <div class="stat-card" style="display: flex; align-items: flex-start; gap: 14px;">
+    <div class="stat-card">
         <div class="stat-icon" style="background: {{ $stat['bg'] }};">{{ $stat['icon'] }}</div>
         <div>
             <div class="stat-label">{{ $stat['label'] }}</div>
@@ -48,7 +48,7 @@
             <h2 class="admin-card-title">Recent Orders</h2>
             <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">View all</a>
         </div>
-        <div style="overflow-x: auto;">
+        <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -93,7 +93,7 @@
             <h2 class="admin-card-title">⚠️ Low Stock</h2>
             <a href="{{ route('admin.products.index') }}" class="btn btn-secondary btn-sm">All products</a>
         </div>
-        <div style="overflow-x: auto;">
+        <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -136,7 +136,7 @@
             <a href="{{ route('admin.leads.index') }}" class="btn btn-secondary btn-sm">View all</a>
         </div>
     </div>
-    <div style="overflow-x: auto;">
+    <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>

@@ -84,6 +84,7 @@
             <div class="admin-card-header">
                 <h2 class="admin-card-title">Orders ({{ $orders->total() }})</h2>
             </div>
+            <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -109,6 +110,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
             @if($orders->hasPages())
             <div style="padding: 12px 16px; border-top: 1px solid var(--admin-border);">
                 {{ $orders->links() }}

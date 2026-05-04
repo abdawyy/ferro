@@ -30,6 +30,7 @@
         {{-- Order Items --}}
         <div class="admin-card">
             <div class="admin-card-header"><h2 class="admin-card-title">Items ({{ $order->items->sum('quantity') }})</h2></div>
+            <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -75,6 +76,7 @@
                     </tr>
                 </tfoot>
             </table>
+            </div>
         </div>
 
         {{-- Customer & Shipping --}}

@@ -59,6 +59,7 @@
 
     <div class="admin-card" style="grid-column: 1 / -1;">
         <div class="admin-card-header"><h2 class="admin-card-title">Quiz answers</h2></div>
+        <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>
@@ -80,6 +81,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 
     @php
@@ -90,6 +92,7 @@
     @if($recProducts->isNotEmpty())
     <div class="admin-card" style="grid-column: 1 / -1;">
         <div class="admin-card-header"><h2 class="admin-card-title">Recommended products</h2></div>
+        <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>
@@ -108,6 +111,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
     @endif
 </div>

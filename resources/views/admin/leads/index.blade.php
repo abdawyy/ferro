@@ -30,9 +30,9 @@
         </div>
     </div>
     <div class="admin-card-body">
-        <form method="POST" action="{{ route('admin.leads.waitlist.store') }}" style="display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end;">
+        <form method="POST" action="{{ route('admin.leads.waitlist.store') }}" class="admin-form-auto-grid">
             @csrf
-            <div style="grid-column: span 2; min-width: 240px;">
+            <div class="admin-form-span-2">
                 <label class="form-label" for="wl-email">Email <span class="text-orange">*</span></label>
                 <input id="wl-email" name="email" type="email" class="form-input" required value="{{ old('email') }}" placeholder="name@example.com" autocomplete="off">
             </div>
@@ -124,7 +124,7 @@
 </form>
 
 <div class="admin-card">
-    <div style="overflow-x: auto;">
+    <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>

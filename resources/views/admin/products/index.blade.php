@@ -38,7 +38,7 @@
 </form>
 
 <div class="admin-card">
-    <div style="overflow-x: auto;">
+    <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>

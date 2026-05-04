@@ -31,7 +31,7 @@
     </div>
 
     {{-- Tab Navigation --}}
-    <div style="display: flex; gap: 0; border-bottom: 1px solid var(--admin-border); margin-bottom: 24px;">
+    <div class="admin-tabs">
         @foreach(['basic' => '📝 Basic Info', 'content' => '📄 Content', 'media' => '🖼 Media', 'pricing' => '💰 Pricing & Stock', 'seo' => '🔍 SEO'] as $key => $label)
         <button type="button"
                 @click="tab = '{{ $key }}'"
@@ -311,7 +311,7 @@
     </div>
 
     {{-- Sticky save bar --}}
-    <div style="position:sticky; bottom: 0; background: var(--admin-surface); border-top: 1px solid var(--admin-border); padding: 12px 0; margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px; z-index: 10;">
+    <div class="admin-form-footer">
         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">
             {{ $editing ? '💾 Save Changes' : '+ Create Product' }}

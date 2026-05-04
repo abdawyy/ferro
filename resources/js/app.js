@@ -53,6 +53,41 @@ window.showToast = function(message, type = 'info', duration = 4000) {
     }, duration);
 };
 
+/**
+ * Admin tables: copy column titles into data-label on each body cell so CSS can
+ * render stacked “card” rows on small viewports (see admin layout @media rules).
+ */
+function initAdminTableMobileLabels() {
+    document.querySelectorAll('table.admin-table').forEach((table) => {
+        const ths = table.querySelectorAll('thead tr:first-of-type th');
+        if (!ths.length) {
+            return;
+        }
+        const headers = [...ths].map((th) =>
+            th.textContent.replace(/\s+/g, ' ').trim()
+        );
+
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+            let col = 0;
+            tr.querySelectorAll(':scope > td').forEach((td) => {
+                const span = parseInt(td.getAttribute('colspan'), 10) || 1;
+                if (span > 1) {
+                    td.removeAttribute('data-label');
+                    col += span;
+                    return;
+                }
+                const label = headers[col] ?? '';
+                col += 1;
+                if (label === '') {
+                    td.removeAttribute('data-label');
+                } else {
+                    td.setAttribute('data-label', label);
+                }
+            });
+        });
+    });
+}
+
 // ── Intersection Observer — Reveal animations ─────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     const io = new IntersectionObserver(
@@ -60,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
     );
     document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
+
+    initAdminTableMobileLabels();
 });
 
 // ── Abandoned cart beacon (fires on page unload from checkout) ────────────
