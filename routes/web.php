@@ -23,6 +23,9 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Models\Order;
+use App\Services\InvoiceService;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 
 // ── Language toggle ────────────────────────────────────────────────────────
@@ -74,19 +77,23 @@ Route::middleware(['auth'])->group(function () {
                     ->firstOrFail(),
     ]))->name('orders.show');
 
-    // Invoice PDF download
+    // Invoice PDF download (always regenerates so the latest template is used)
     Route::get('/invoices/{orderNumber}', function (string $orderNumber) {
-        $order = \App\Models\Order::where('order_number', $orderNumber)
-                    ->where('user_id', auth()->id())
-                    ->firstOrFail();
+        $order = Order::where('order_number', $orderNumber)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
-        if (! $order->invoice_pdf_path || ! \Storage::disk('local')->exists($order->invoice_pdf_path)) {
-            abort(404, 'Invoice not found.');
+        try {
+            app(InvoiceService::class)->generate($order->fresh(['items', 'user', 'lead']));
+            $order->refresh();
+        } catch (\Throwable $e) {
+            abort(503, 'Invoice is not available yet. Please try again later.');
         }
 
         return response()->download(
-            storage_path('app/' . $order->invoice_pdf_path),
-            "FERRO_Invoice_{$order->invoice_number}.pdf"
+            Storage::disk('local')->path($order->invoice_pdf_path),
+            "FERRO_Invoice_{$order->invoice_number}.pdf",
+            ['Content-Type' => 'application/pdf']
         );
     })->name('invoices.download');
 });
@@ -117,14 +124,24 @@ Route::middleware(['auth', 'admin'])
         Route::patch('users/{user}/block', [Admin\UserController::class, 'block'])->name('users.block');
         Route::patch('users/{user}/unblock', [Admin\UserController::class, 'unblock'])->name('users.unblock');
 
+        // Administrators (create staff + promote customers)
+        Route::get('admins', [Admin\UserController::class, 'admins'])->name('admins.index');
+        Route::get('admins/create', [Admin\UserController::class, 'createAdmin'])->name('admins.create');
+        Route::post('admins', [Admin\UserController::class, 'storeAdmin'])->name('admins.store');
+
         // Admin privileges
         Route::patch('users/{user}/make-admin', [Admin\UserController::class, 'makeAdmin'])->name('users.make-admin');
         Route::patch('users/{user}/remove-admin', [Admin\UserController::class, 'removeAdmin'])->name('users.remove-admin');
 
         // Leads & Waitlist
         Route::get('leads', [Admin\LeadController::class, 'index'])->name('leads.index');
+        Route::post('leads/waitlist', [Admin\LeadController::class, 'storeWaitlist'])->name('leads.waitlist.store');
         Route::get('leads/export', [Admin\LeadController::class, 'export'])->name('leads.export');
         Route::get('leads/waitlist/export', [Admin\LeadController::class, 'exportWaitlist'])->name('leads.waitlist.export');
+
+        // Skin quiz submissions
+        Route::get('quiz-responses', [Admin\QuizResponseController::class, 'index'])->name('quiz-responses.index');
+        Route::get('quiz-responses/{quiz_session}', [Admin\QuizResponseController::class, 'show'])->name('quiz-responses.show');
 
         // Pages / CMS
         Route::resource('pages', Admin\PageController::class)->except(['show']);

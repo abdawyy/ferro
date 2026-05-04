@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Storage;
  *
  * Formula enforced:
  *   total = (subtotal - discount_amount) + shipping_amount + tax_amount
- *   line_total = (unit_price * quantity) - line_discount + line_tax
+ *   line_total = (unit_price * quantity) - discount_amount  (line net, excludes line tax)
+ *   order subtotal = sum of all line_total values (same as sum of line nets)
+ *   order tax_amount = (subtotal - order discount) * tax_rate (order-level VAT)
  */
 class InvoiceService
 {
@@ -36,27 +38,23 @@ class InvoiceService
         // 2. Validate arithmetic — throws on discrepancy
         $this->validateTotals($order);
 
-        // 3. Determine rendering language
-        $locale = $order->language ?? 'en';
-        app()->setLocale($locale);
+        // 3. English-only PDF (DomPDF Arabic/RTL is unreliable across viewers)
+        $data = $this->buildInvoiceViewData($order);
 
-        // 4. Prepare invoice data
-        $data = $this->buildInvoiceData($order, $locale);
-
-        // 5. Render PDF via DomPDF (uses Blade view)
+        // 4. Render PDF via DomPDF (uses Blade view)
         $pdf = Pdf::loadView('pdf.invoice', $data)
                   ->setPaper('a4', 'portrait')
                   ->setOption('dpi', 150)
-                  ->setOption('defaultFont', $locale === 'ar' ? 'DejaVu Sans' : 'DejaVu Sans');
+                  ->setOption('defaultFont', 'DejaVu Sans');
 
-        // 6. Store PDF
+        // 5. Store PDF
         $invoiceNumber = $order->invoice_number ?? $this->generateInvoiceNumber($order);
         $filename      = "invoice_{$invoiceNumber}.pdf";
         $path          = "invoices/{$filename}";
 
         Storage::disk('local')->put($path, $pdf->output());
 
-        // 7. Persist reference to invoice
+        // 6. Persist reference to invoice
         $order->update([
             'invoice_number'       => $invoiceNumber,
             'invoice_pdf_path'     => $path,
@@ -137,47 +135,83 @@ class InvoiceService
     {
         $scale = self::SCALE;
 
-        // line_total = (unit_price * qty) - discount + tax
-        $gross    = bcmul((string) $item->unit_price, (string) $item->quantity, $scale);
-        $afterDisc= bcsub($gross, (string) $item->discount_amount, $scale);
-        $computed = bcadd($afterDisc, (string) $item->tax_amount, $scale);
+        // line_total = net before tax (matches checkout / seeders); tax is rolled up at order level
+        $gross     = bcmul((string) $item->unit_price, (string) $item->quantity, $scale);
+        $lineNet   = bcsub($gross, (string) $item->discount_amount, $scale);
 
-        if (bccomp((string) $item->line_total, $computed, $scale) !== 0) {
+        if (bccomp((string) $item->line_total, $lineNet, $scale) !== 0) {
             throw new \App\Exceptions\InvoiceArithmeticException(
                 "Line total mismatch for SKU {$item->product_sku}. " .
-                "Stored: {$item->line_total}, Computed: {$computed}"
+                "Stored: {$item->line_total}, Computed (unit×qty−discount): {$lineNet}"
             );
         }
     }
 
     /**
-     * Build view data for the invoice Blade template.
+     * Build view data for the English invoice PDF.
      */
-    private function buildInvoiceData(Order $order, string $locale): array
+    private function buildInvoiceViewData(Order $order): array
     {
-        $isRtl = $locale === 'ar';
-
         return [
-            'order'         => $order,
-            'items'         => $order->items,
-            'locale'        => $locale,
-            'isRtl'         => $isRtl,
-            'currencySymbol'=> $order->currency === 'USD' ? '$' : ($order->currency === 'AED' ? 'AED' : $order->currency),
-            'brandName'     => 'FERRO',
-            'brandTagline'  => $isRtl ? 'مصنوع من الحديد — مصقول بالرفاهية' : 'Forged from Iron — Polished by Luxury',
-            'invoiceLabel'  => $isRtl ? 'فاتورة' : 'INVOICE',
-            'billingLabel'  => $isRtl ? 'عنوان الفواتير' : 'BILL TO',
-            'shippingLabel' => $isRtl ? 'عنوان الشحن' : 'SHIP TO',
-            'subtotalLabel' => $isRtl ? 'المجموع الفرعي' : 'Subtotal',
-            'discountLabel' => $isRtl ? 'الخصم' : 'Discount',
-            'shippingLabel2'=> $isRtl ? 'الشحن' : 'Shipping',
-            'taxLabel'      => $isRtl ? 'الضريبة' : 'Tax',
-            'totalLabel'    => $isRtl ? 'الإجمالي' : 'Total',
-            'thankYouLabel' => $isRtl
-                ? 'شكراً لثقتك في فيرو'
-                : 'Thank you for choosing FERRO',
-            'generatedAt'   => now()->format('d M Y'),
+            'order'                => $order,
+            'items'                => $order->items,
+            'currencySymbol'       => $this->currencySymbol($order),
+            'brandTagline'         => 'Forged from Iron — Polished by Luxury',
+            'invoiceLabel'         => 'INVOICE',
+            'billingLabel'         => 'BILL TO',
+            'shippingLabel'        => 'SHIP TO',
+            'subtotalLabel'        => 'Subtotal',
+            'discountLabel'        => 'Discount',
+            'shippingLabel2'       => 'Shipping',
+            'taxLabel'             => 'Tax',
+            'totalLabel'           => 'Total',
+            'thankYouLabel'        => 'Thank you for choosing FERRO',
+            'generatedAt'          => now()->format('d M Y'),
+            'orderDateFormatted'   => $order->created_at->format('d M Y'),
+            'orderNumberLabel'     => 'Order number',
+            'orderDateLabel'       => 'Order date',
+            'paymentMethodLabel'   => 'Payment method',
+            'paymentStatusLabel'   => 'Payment status',
+            'paymentMethodDisplay' => $this->paymentMethodLabel($order->payment_method),
+            'paymentStatusDisplay' => $this->paymentStatusLabel($order->payment_status),
         ];
+    }
+
+    private function currencySymbol(Order $order): string
+    {
+        return match ($order->currency) {
+            'USD' => '$',
+            'AED' => 'AED',
+            default => (string) $order->currency,
+        };
+    }
+
+    private function paymentMethodLabel(?string $method): string
+    {
+        $m = strtolower((string) $method);
+
+        return match ($m) {
+            'cash_on_delivery', 'cod' => 'Cash on delivery',
+            'visa', 'card', 'credit_card' => 'Card',
+            'fawry' => 'Fawry',
+            'apple_pay' => 'Apple Pay',
+            'mada' => 'Mada',
+            default => $method ? ucwords(str_replace('_', ' ', $method)) : 'N/A',
+        };
+    }
+
+    private function paymentStatusLabel(?string $status): string
+    {
+        $s = strtolower((string) $status);
+
+        return match ($s) {
+            'paid' => 'Paid',
+            'unpaid' => 'Unpaid',
+            'pending' => 'Pending',
+            'refunded' => 'Refunded',
+            'partially_refunded' => 'Partially refunded',
+            default => $status ? ucwords(str_replace('_', ' ', $status)) : 'N/A',
+        };
     }
 
     private function generateInvoiceNumber(Order $order): string

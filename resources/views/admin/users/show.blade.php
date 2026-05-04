@@ -16,7 +16,20 @@
         <span class="badge badge-success">Active</span>
         @endif
     </div>
-    <div style="display: flex; gap: 8px;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        @if($user->is_admin)
+            @if($user->id !== auth()->id())
+            <form method="POST" action="{{ route('admin.users.remove-admin', $user) }}" onsubmit="return confirm('Remove admin access for this account?')">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-secondary">Remove admin access</button>
+            </form>
+            @endif
+        @else
+            <form method="POST" action="{{ route('admin.users.make-admin', $user) }}" onsubmit="return confirm('Grant this user full admin access to the portal?')">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-primary">Grant admin access</button>
+            </form>
+        @endif
         @if($user->is_blocked)
         <form method="POST" action="{{ route('admin.users.unblock', $user) }}">
             @csrf @method('PATCH')
@@ -40,6 +53,7 @@
                 @foreach([
                     ['Name',         $user->name],
                     ['Email',        $user->email],
+                    ['Role',         $user->is_admin ? 'Administrator' : 'Customer'],
                     ['Language',     strtoupper($user->preferred_language ?? 'EN')],
                     ['Joined',       $user->created_at->format('d F Y')],
                     ['Last Login',   $user->last_login_at?->format('d F Y, H:i') ?? 'Never'],

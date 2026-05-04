@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\LeadRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
+use App\Models\Product;
+use App\Models\WaitlistEntry;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,7 +43,74 @@ class LeadController extends Controller
             ->groupBy('source')
             ->pluck('total', 'source');
 
-        return view('admin.leads.index', compact('leads', 'sourceCounts'));
+        $products = Product::query()
+            ->where('status', '!=', Product::STATUS_ARCHIVED)
+            ->orderBy('sku')
+            ->get(['id', 'sku', 'name']);
+
+        return view('admin.leads.index', compact('leads', 'sourceCounts', 'products'));
+    }
+
+    /**
+     * POST /admin/leads/waitlist — add or refresh a waitlist lead (manual entry).
+     */
+    public function storeWaitlist(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email'               => ['required', 'email', 'max:255'],
+            'first_name'          => ['nullable', 'string', 'max:100'],
+            'last_name'           => ['nullable', 'string', 'max:100'],
+            'product_id'          => ['nullable', 'exists:products,id'],
+            'preferred_language'  => ['nullable', Rule::in(['en', 'ar'])],
+            'marketing_consent'   => ['nullable', 'boolean'],
+            'send_welcome_email'  => ['nullable', 'boolean'],
+        ]);
+
+        $lead = Lead::updateOrCreate(
+            ['email' => $validated['email']],
+            [
+                'first_name'          => $validated['first_name'] ?? null,
+                'last_name'           => $validated['last_name'] ?? null,
+                'source'              => Lead::SOURCE_WAITLIST,
+                'status'              => Lead::STATUS_NEW,
+                'preferred_language'  => $validated['preferred_language'] ?? 'en',
+                'on_waitlist'         => true,
+                'waitlist_product_id' => $validated['product_id'] ?? null,
+                'marketing_consent'   => $request->boolean('marketing_consent'),
+                'gdpr_consent'        => true,
+                'consented_at'        => now(),
+                'ip_address'          => $request->ip(),
+                'utm_data'            => array_filter([
+                    'utm_source'       => 'admin_portal',
+                    'admin_user_id'  => (string) auth()->id(),
+                    'admin_added_at' => now()->toIso8601String(),
+                ]),
+            ]
+        );
+
+        if (! empty($validated['product_id'])) {
+            $pid = (int) $validated['product_id'];
+            $entry = WaitlistEntry::firstOrNew([
+                'product_id' => $pid,
+                'email'      => $validated['email'],
+            ]);
+            if (! $entry->exists) {
+                $entry->position = WaitlistEntry::where('product_id', $pid)->count() + 1;
+            }
+            $entry->fill([
+                'lead_id'            => $lead->id,
+                'preferred_language' => $validated['preferred_language'] ?? 'en',
+            ]);
+            $entry->save();
+        }
+
+        if ($request->boolean('send_welcome_email')) {
+            LeadRegistered::dispatch($lead);
+        }
+
+        return redirect()
+            ->route('admin.leads.index', ['waitlist_only' => 1, 'source' => Lead::SOURCE_WAITLIST])
+            ->with('success', 'Waitlist entry saved for ' . $validated['email'] . '.');
     }
 
     /**
@@ -120,11 +191,13 @@ class LeadController extends Controller
                 'Waitlist Notified', 'Position', 'Created At',
             ]);
 
+            $position = 0;
             Lead::where('on_waitlist', true)
                 ->with('waitlistProduct')
                 ->orderBy('created_at')
-                ->chunk(500, function ($leads) use ($handle) {
-                    foreach ($leads as $i => $lead) {
+                ->chunk(500, function ($leads) use ($handle, &$position) {
+                    foreach ($leads as $lead) {
+                        $position++;
                         fputcsv($handle, [
                             $lead->id,
                             $lead->email,
@@ -133,7 +206,7 @@ class LeadController extends Controller
                             $lead->waitlist_product_id ?? '',
                             $lead->preferred_language ?? '',
                             $lead->waitlist_notified_at ? $lead->waitlist_notified_at->format('Y-m-d') : 'No',
-                            $i + 1,
+                            $position,
                             $lead->created_at->format('Y-m-d H:i:s'),
                         ]);
                     }

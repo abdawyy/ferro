@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\QuizSession;
 
 /**
  * FERRO Skincare Quiz Engine (Advanced Feature #2)
@@ -102,5 +101,108 @@ class QuizRecommendationEngine
         }
 
         return array_unique($tags);
+    }
+
+    /**
+     * Storefront quiz (resources/views/quiz.blade.php) — answers indexed 0–4.
+     *
+     * @param  array<int|string, string>  $answers
+     * @return array{profile: array{label_en: string, label_ar: string, desc_en: string, desc_ar: string}, product_ids: list<int>, products: \Illuminate\Support\Collection<int, Product>, tags: list<string>}
+     */
+    public function analyzeFromUiAnswers(array $answers): array
+    {
+        $tags = [];
+        foreach ($answers as $value) {
+            if (! is_string($value) || $value === '') {
+                continue;
+            }
+            $tags[] = $value;
+            if ($value === 'oil') {
+                $tags[] = 'oily';
+            }
+            if ($value === 'recovery') {
+                $tags[] = 'recover';
+            }
+        }
+        $tags = array_values(array_unique($tags));
+
+        $products = Product::query()
+            ->visible()
+            ->whereNotNull('quiz_tags')
+            ->get()
+            ->map(function (Product $product) use ($tags) {
+                $productTags = $product->quiz_tags ?? [];
+                $overlap     = count(array_intersect($tags, $productTags));
+
+                return ['product' => $product, 'score' => $overlap];
+            })
+            ->filter(fn ($row) => $row['score'] > 0)
+            ->sortByDesc('score')
+            ->take(3)
+            ->pluck('product')
+            ->values();
+
+        return [
+            'profile'     => $this->skinProfileFromUiAnswers($answers),
+            'product_ids' => $products->pluck('id')->all(),
+            'products'    => $products,
+            'tags'        => $tags,
+        ];
+    }
+
+    /**
+     * @param  array<int|string, string>  $answers
+     * @return array{label_en: string, label_ar: string, desc_en: string, desc_ar: string}
+     */
+    private function skinProfileFromUiAnswers(array $answers): array
+    {
+        $lifestyle = $answers[0] ?? $answers['0'] ?? 'athlete';
+        $concern   = $answers[1] ?? $answers['1'] ?? 'hydration';
+        $feel      = $answers[3] ?? $answers['3'] ?? 'combo';
+
+        $matrix = [
+            'athlete' => [
+                'label_en' => 'The Iron Athlete',
+                'label_ar' => 'الرياضي الحديدي',
+                'desc_en'  => 'Built for performance. Your skin needs recovery, resilience, and deep cleansing after intense output.',
+                'desc_ar'  => 'مصمم للأداء. بشرتك تحتاج استرداداً ومرونة وتنظيفاً عميقاً بعد الجهد المكثف.',
+            ],
+            'executive' => [
+                'label_en' => 'Urban Resilience',
+                'label_ar' => 'صمود المدينة',
+                'desc_en'  => 'High-stress environments demand barrier support, pollution defense, and a polished look that lasts.',
+                'desc_ar'  => 'البيئات عالية الضغط تتطلب دعماً للحاجز والدفاع ضد التلوث ومظهراً أنيقاً يدوم.',
+            ],
+            'outdoor' => [
+                'label_en' => 'The Natural Warrior',
+                'label_ar' => 'المحارب الطبيعي',
+                'desc_en'  => 'Sun, wind, and sweat — your regimen should protect, restore, and keep skin calm after exposure.',
+                'desc_ar'  => 'الشمس والرياح والعرق — روتينك يجب أن يحمي ويستعيد ويهدئ البشرة بعد التعرض.',
+            ],
+            'refined' => [
+                'label_en' => 'The Refined Gentleman',
+                'label_ar' => 'الرجل الراقي',
+                'desc_en'  => 'Precision and luxury. Focus on texture, tone, and elevated daily rituals that feel effortless.',
+                'desc_ar'  => 'الدقة والفخامة. ركز على الملمس واللون وطقوس يومية راقية بسهولة.',
+            ],
+        ];
+
+        $base = $matrix[$lifestyle] ?? $matrix['athlete'];
+
+        if (in_array($feel, ['dry', 'sensitive'], true)) {
+            $base['desc_en'] .= ' Hydration and barrier care are especially important for you.';
+            $base['desc_ar'] .= ' الترطيب والعناية بالحاجز مهمان بشكل خاص بالنسبة لك.';
+        }
+        if ($concern === 'aging') {
+            $base['desc_en'] .= ' Anti-aging actives will complement your goals.';
+            $base['desc_ar'] .= ' مكونات مكافحة الشيخوخة ستكمل أهدافك.';
+        }
+
+        return [
+            'label_en' => $base['label_en'],
+            'label_ar' => $base['label_ar'],
+            'desc_en'  => $base['desc_en'],
+            'desc_ar'  => $base['desc_ar'],
+        ];
     }
 }

@@ -7,8 +7,9 @@ use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class OrderController extends Controller
 {
@@ -79,21 +80,23 @@ class OrderController extends Controller
         return back()->with('success', "Order #{$order->order_number} status updated to {$data['status']}.");
     }
 
-    public function downloadInvoice(Order $order): Response|RedirectResponse
+    public function downloadInvoice(Order $order): SymfonyResponse
     {
-        if (! $order->invoice_pdf_path || ! \Storage::disk('local')->exists($order->invoice_pdf_path)) {
-            // Try to generate on the fly
-            try {
-                $service = app(InvoiceService::class);
-                $path = $service->generate($order);
-                $order->update(['invoice_pdf_path' => $path]);
-            } catch (\Throwable $e) {
-                return back()->with('error', 'Invoice could not be generated: ' . $e->getMessage());
-            }
+        $order->refresh();
+
+        // Always regenerate so template/language fixes apply (old PDFs were cached on disk).
+        try {
+            $path = app(InvoiceService::class)->generate($order->fresh(['items', 'user', 'lead']));
+            $order->update(['invoice_pdf_path' => $path]);
+            $order->refresh();
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Invoice could not be generated: ' . $e->getMessage());
         }
 
+        $absolute = Storage::disk('local')->path($order->invoice_pdf_path);
+
         return response()->download(
-            storage_path('app/' . $order->invoice_pdf_path),
+            $absolute,
             "FERRO_Invoice_{$order->invoice_number}.pdf",
             ['Content-Type' => 'application/pdf']
         );

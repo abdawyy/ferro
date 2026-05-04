@@ -19,6 +19,66 @@
     </div>
 </div>
 
+<div class="admin-card" style="margin-bottom: 20px;">
+    <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2 class="admin-card-title" style="margin: 0;">Add someone to the waitlist</h2>
+            <p class="text-muted text-sm" style="margin: 6px 0 0;">
+                Visitors join via the storefront <strong class="mono">POST {{ url('/waitlist') }}</strong> (email + optional product).
+                Use this form to add or update a lead manually without using the public form.
+            </p>
+        </div>
+    </div>
+    <div class="admin-card-body">
+        <form method="POST" action="{{ route('admin.leads.waitlist.store') }}" style="display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end;">
+            @csrf
+            <div style="grid-column: span 2; min-width: 240px;">
+                <label class="form-label" for="wl-email">Email <span class="text-orange">*</span></label>
+                <input id="wl-email" name="email" type="email" class="form-input" required value="{{ old('email') }}" placeholder="name@example.com" autocomplete="off">
+            </div>
+            <div>
+                <label class="form-label" for="wl-fn">First name</label>
+                <input id="wl-fn" name="first_name" type="text" class="form-input" value="{{ old('first_name') }}">
+            </div>
+            <div>
+                <label class="form-label" for="wl-ln">Last name</label>
+                <input id="wl-ln" name="last_name" type="text" class="form-input" value="{{ old('last_name') }}">
+            </div>
+            <div>
+                <label class="form-label" for="wl-product">Product (optional)</label>
+                <select id="wl-product" name="product_id" class="form-input form-select">
+                    <option value="">— General waitlist —</option>
+                    @foreach($products as $p)
+                    <option value="{{ $p->id }}" @selected(old('product_id') == $p->id)>{{ $p->sku }} — {{ $p->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="wl-lang">Language</label>
+                <select id="wl-lang" name="preferred_language" class="form-input form-select">
+                    <option value="en" @selected(old('preferred_language', 'en') === 'en')>English</option>
+                    <option value="ar" @selected(old('preferred_language') === 'ar')>العربية</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-check" style="margin: 0;">
+                    <input type="hidden" name="marketing_consent" value="0">
+                    <input type="checkbox" name="marketing_consent" value="1" @checked(old('marketing_consent', true))>
+                    Marketing consent
+                </label>
+                <label class="form-check" style="margin: 0;">
+                    <input type="hidden" name="send_welcome_email" value="0">
+                    <input type="checkbox" name="send_welcome_email" value="1" @checked(old('send_welcome_email'))>
+                    Send waitlist welcome email
+                </label>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Save to waitlist</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Source pills --}}
 <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
     <a href="{{ route('admin.leads.index') }}"
