@@ -42,10 +42,17 @@
 
         /* ── Layout ── */
         .admin-wrap        { display: flex; min-height: 100vh; }
-        .admin-sidebar     { width: var(--sidebar-w); flex-shrink: 0; background: var(--admin-surface); border-right: 1px solid var(--admin-border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; z-index: 50; }
-        .admin-main        { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .admin-topbar      { background: var(--admin-surface); border-bottom: 1px solid var(--admin-border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
-        .admin-content     { padding: 28px 28px; flex: 1; }
+        .admin-sidebar     { width: var(--sidebar-w); flex-shrink: 0; background: var(--admin-surface); border-right: 1px solid var(--admin-border); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; z-index: 50; transition: transform 0.22s ease; }
+        .admin-main        { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; min-width: 0; }
+        .admin-topbar      { background: var(--admin-surface); border-bottom: 1px solid var(--admin-border); padding: 0 24px; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 40; flex-wrap: wrap; }
+        .admin-topbar-start{ display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+        .admin-content     { padding: 28px 28px; flex: 1; min-width: 0; }
+        .admin-nav-toggle  { display: none; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--admin-border); border-radius: 4px; background: #1A1A1A; color: var(--admin-text); cursor: pointer; flex-shrink: 0; transition: background 0.15s, border-color 0.15s; }
+        .admin-nav-toggle:hover { background: rgba(255,255,255,0.06); border-color: #404040; }
+        .admin-nav-toggle svg { width: 22px; height: 22px; }
+        .admin-mobile-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 45; }
+        .admin-wrap.nav-open .admin-mobile-backdrop { display: block; }
+        .admin-wrap.nav-open .admin-sidebar { transform: translateX(0); box-shadow: 8px 0 32px rgba(0,0,0,0.5); }
 
         /* ── Sidebar ── */
         .sidebar-logo      { padding: 20px 20px 16px; border-bottom: 1px solid var(--admin-border); flex-shrink: 0; }
@@ -132,7 +139,7 @@
         .text-sm           { font-size: 12px; }
         .mono              { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
         .divider           { border: none; border-top: 1px solid var(--admin-border); margin: 20px 0; }
-        .page-header       { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-header       { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
         .page-header h1    { font-size: 20px; font-weight: 700; color: #FFFFFF; margin: 0; }
         .grid-2            { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3            { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
@@ -144,15 +151,48 @@
             .grid-3 { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 768px) {
+            .admin-nav-toggle { display: inline-flex; }
             .admin-sidebar { transform: translateX(-100%); }
             .admin-main    { margin-left: 0; }
+            .admin-content { padding: 16px 14px; }
+            .admin-topbar  { padding: 10px 12px; }
+            .topbar-actions { gap: 8px; }
+            .topbar-username { display: none; }
+            .topbar-actions .btn-sm { padding: 6px 10px; font-size: 11px; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; align-items: stretch; }
+            .page-header > div:last-child { width: 100%; }
+            .page-header .btn { flex: 1; justify-content: center; min-width: 0; }
+            .admin-card-header { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+            .admin-table { min-width: 520px; }
+            .admin-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .stat-card { padding: 16px; }
+            .stat-value { font-size: 22px; }
+        }
+        @media (max-width: 480px) {
+            .admin-content { padding: 12px 10px; }
         }
     </style>
 
+    <style>[x-cloak]{display:none!important;}</style>
     @stack('head')
 </head>
 <body>
-<div class="admin-wrap">
+<div
+    class="admin-wrap"
+    x-data="{ navOpen: false }"
+    x-init="$watch('navOpen', v => { document.body.style.overflow = v ? 'hidden' : '' })"
+    :class="{ 'nav-open': navOpen }"
+    @keydown.window.escape="navOpen = false"
+>
+    <div
+        class="admin-mobile-backdrop"
+        x-show="navOpen"
+        x-cloak
+        @click="navOpen = false"
+        aria-hidden="true"
+    ></div>
 
     {{-- Sidebar --}}
     @include('admin.partials.sidebar')
@@ -162,11 +202,25 @@
 
         {{-- Topbar --}}
         <header class="admin-topbar">
-            <div>
-                <div class="topbar-title">@yield('page_title', 'Dashboard')</div>
-                @hasSection('breadcrumb')
-                <div class="topbar-breadcrumb">@yield('breadcrumb')</div>
-                @endif
+            <div class="admin-topbar-start">
+                <button
+                    type="button"
+                    class="admin-nav-toggle"
+                    @click="navOpen = ! navOpen"
+                    :aria-expanded="navOpen"
+                    aria-controls="admin-sidebar"
+                    :aria-label="navOpen ? 'Close menu' : 'Open menu'"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div style="min-width:0;">
+                    <div class="topbar-title">@yield('page_title', 'Dashboard')</div>
+                    @hasSection('breadcrumb')
+                    <div class="topbar-breadcrumb">@yield('breadcrumb')</div>
+                    @endif
+                </div>
             </div>
             <div class="topbar-actions">
                 <a href="{{ route('home') }}" class="btn btn-secondary btn-sm" target="_blank" style="gap:5px;">

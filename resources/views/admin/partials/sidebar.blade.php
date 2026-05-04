@@ -15,10 +15,10 @@
     ];
 @endphp
 
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" id="admin-sidebar">
     {{-- Logo --}}
     <div class="sidebar-logo">
-        <a href="{{ route('admin.dashboard') }}" class="sidebar-logo-text">
+        <a href="{{ route('admin.dashboard') }}" class="sidebar-logo-text" @click="navOpen = false">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8500A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             FERRO
             <span class="sidebar-logo-badge">ADMIN</span>
@@ -36,7 +36,8 @@
                 @endphp
                 <a href="{{ route($item['route']) }}"
                    class="sidebar-link {{ $isActive ? 'active' : '' }}"
-                   aria-current="{{ $isActive ? 'page' : 'false' }}">
+                   aria-current="{{ $isActive ? 'page' : 'false' }}"
+                   @click="navOpen = false">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         {!! $item['icon'] !!}
                     </svg>
