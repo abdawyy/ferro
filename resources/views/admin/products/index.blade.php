@@ -100,9 +100,15 @@
                         @if($product->is_best_seller) <span class="badge badge-success" style="margin: 1px;">Best Seller</span> @endif
                     </td>
                     <td>
-                        <div style="display: flex; gap: 6px;">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary btn-xs">Edit</a>
-                            @if(!$product->trashed())
+                            @if($product->trashed())
+                            <form method="POST" action="{{ route('admin.products.restore', $product) }}"
+                                  onsubmit="return confirm('Restore this product to the catalogue?')">
+                                @csrf
+                                <button type="submit" class="btn btn-primary btn-xs">Unarchive</button>
+                            </form>
+                            @else
                             <form method="POST" action="{{ route('admin.products.destroy', $product) }}"
                                   onsubmit="return confirm('Archive this product?')">
                                 @csrf @method('DELETE')

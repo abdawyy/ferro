@@ -15,13 +15,20 @@ class OrderController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Order::with('user')->latest();
+        $query = Order::with(['user', 'lead'])->latest();
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%"));
+            $like = '%'.addcslashes($search, '%_\\').'%';
+            $query->where(function ($q) use ($like) {
+                $q->where('order_number', 'like', $like)
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $like)
+                        ->orWhere('email', 'like', $like))
+                    ->orWhereHas('lead', fn ($l) => $l->where('email', 'like', $like)
+                        ->orWhere('first_name', 'like', $like)
+                        ->orWhere('last_name', 'like', $like))
+                    ->orWhere('billing_address->email', 'like', $like)
+                    ->orWhere('billing_address->first_name', 'like', $like)
+                    ->orWhere('billing_address->last_name', 'like', $like);
             });
         }
 
@@ -44,7 +51,7 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load('user', 'items.product');
+        $order->load(['user', 'lead', 'items.product']);
         return view('admin.orders.show', compact('order'));
     }
 

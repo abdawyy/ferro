@@ -88,6 +88,117 @@ function initAdminTableMobileLabels() {
     });
 }
 
+window.mergeFerroCartItem = function (item) {
+    let cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
+    } catch (_) {
+        cart = [];
+    }
+    const idx = cart.findIndex((x) => Number(x.id) === Number(item.id));
+    if (idx >= 0) {
+        cart[idx].qty = Math.min(50, Number(cart[idx].qty || 0) + Number(item.qty || 1));
+        if (item.currency) {
+            cart[idx].currency = item.currency;
+        }
+    } else {
+        cart.push({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            currency: item.currency || 'EGP',
+            qty: Math.min(50, Number(item.qty || 1)),
+            image: item.image || '',
+            url: item.url || '',
+            category: item.category || '',
+        });
+    }
+    localStorage.setItem('ferro_cart', JSON.stringify(cart));
+    return cart.reduce((s, i) => s + Number(i.qty || 0), 0);
+};
+
+function ferroCartAddUrl() {
+    const explicit = document.querySelector('meta[name="ferro-cart-add-url"]')?.getAttribute('content')?.trim();
+    if (explicit) {
+        return explicit;
+    }
+    return new URL('/api/cart/add', window.location.href).href;
+}
+
+function ferroXsrfTokenFromCookie() {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    if (!match) {
+        return '';
+    }
+    try {
+        return decodeURIComponent(match[1]);
+    } catch {
+        return match[1];
+    }
+}
+
+function ferroSyncCartBadges(totalQty) {
+    document.querySelectorAll('[data-ferro-cart-badge]').forEach((badge) => {
+        badge.textContent = String(totalQty);
+        if (totalQty > 0) {
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    });
+}
+window.ferroSyncCartBadges = ferroSyncCartBadges;
+
+function ferroPulseCartBadges() {
+    document.querySelectorAll('[data-ferro-cart-badge]').forEach((badge) => {
+        badge.classList.remove('ferro-cart-badge-pop');
+        // Reflow so repeated adds retrigger animation
+        void badge.offsetWidth;
+        badge.classList.add('ferro-cart-badge-pop');
+    });
+}
+
+window.ferroAddToCart = async function (productId, qty = 1) {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    const xsrf = ferroXsrfTokenFromCookie();
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token || '',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+    };
+    if (xsrf) {
+        headers['X-XSRF-TOKEN'] = xsrf;
+    }
+    let res;
+    try {
+        res = await fetch(ferroCartAddUrl(), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers,
+            body: JSON.stringify({ product_id: productId, quantity: qty }),
+        });
+    } catch {
+        window.showToast?.('Network error. Please try again.', 'error');
+        return false;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!data.success || !data.item) {
+        const msg =
+            data.message ||
+            (res.status === 419 ? 'Session expired. Refresh the page and try again.' : '') ||
+            'Could not add to cart';
+        window.showToast?.(msg, 'error');
+        return false;
+    }
+    const totalQty = window.mergeFerroCartItem(data.item);
+    ferroSyncCartBadges(totalQty);
+    ferroPulseCartBadges();
+    const ar = document.documentElement.getAttribute('lang') === 'ar';
+    window.showToast?.(ar ? 'أُضيف إلى سلتك!' : 'Added to your arsenal!', 'success');
+    return true;
+};
+
 function ferroCartQtyFromStorage() {
     try {
         const cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
@@ -96,6 +207,29 @@ function ferroCartQtyFromStorage() {
         return 0;
     }
 }
+
+function ferroFindAddToCartButton(ev) {
+    for (const node of ev.composedPath()) {
+        if (node instanceof Element && node.hasAttribute('data-ferro-add-to-cart')) {
+            return node;
+        }
+    }
+    return null;
+}
+
+document.addEventListener('click', (e) => {
+    const addBtn = ferroFindAddToCartButton(e);
+    if (!addBtn) {
+        return;
+    }
+    e.preventDefault();
+    const id = Number.parseInt(addBtn.getAttribute('data-ferro-add-to-cart') || '', 10);
+    const q = Number.parseInt(addBtn.getAttribute('data-ferro-add-qty') || '1', 10);
+    if (!Number.isFinite(id) || id <= 0 || typeof window.ferroAddToCart !== 'function') {
+        return;
+    }
+    window.ferroAddToCart(id, Number.isFinite(q) && q > 0 ? q : 1);
+});
 
 // ── Intersection Observer — Reveal animations + cart badge ────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -107,12 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initAdminTableMobileLabels();
 
-    const badge = document.getElementById('cart-badge');
     const count = ferroCartQtyFromStorage();
-    if (badge && count > 0) {
-        badge.textContent = String(count);
-        badge.classList.remove('hidden');
-    }
+    ferroSyncCartBadges(count);
 });
 
 // ── Abandoned cart beacon (fires on page unload from checkout) ────────────

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ShopQuickFilter;
+use App\Support\ShopCatalogPaginator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,32 +16,11 @@ class ProductController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Product::visible()
-            ->with('category')
-            ->orderBy('sort_order');
-
-        if ($request->filled('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('q')) {
-            $term = '%'.addcslashes(trim($request->input('q')), '%_\\').'%';
-            $query->where(function ($w) use ($term) {
-                $w->where('sku', 'like', $term)
-                    ->orWhere('slug', 'like', $term)
-                    ->orWhere('name->en', 'like', $term)
-                    ->orWhere('name->ar', 'like', $term);
-            });
-        }
-
-        $products = $query->paginate(12)->withQueryString();
+        $products = ShopCatalogPaginator::paginate($request, 12);
         $categories = ProductCategory::where('is_active', true)->orderBy('sort_order')->get();
+        $shopQuickFilters = ShopQuickFilter::where('is_active', true)->orderBy('sort_order')->get();
 
-        return view('products.index', compact('products', 'categories'));
+        return view('products.index', compact('products', 'categories', 'shopQuickFilters'));
     }
 
     /**

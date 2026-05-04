@@ -55,7 +55,20 @@
                 @forelse($orders as $order)
                 @php
                     $statusBadge = ['delivered'=>'badge-success','shipped'=>'badge-info','confirmed'=>'badge-success','processing'=>'badge-warning','pending_payment'=>'badge-warning','cancelled'=>'badge-danger','refunded'=>'badge-neutral'][$order->status] ?? 'badge-neutral';
-                    $payBadge    = ['paid'=>'badge-success','pending'=>'badge-warning','failed'=>'badge-danger','refunded'=>'badge-neutral'][$order->payment_status ?? 'pending'] ?? 'badge-neutral';
+                    $payBadge = match ($order->payment_status) {
+                        'paid' => 'badge-success',
+                        'unpaid' => 'badge-warning',
+                        'partially_refunded' => 'badge-neutral',
+                        'refunded' => 'badge-neutral',
+                        default => 'badge-neutral',
+                    };
+                    $bill = $order->billing_address ?? [];
+                    $custName = $order->user?->name
+                        ?? trim(($bill['first_name'] ?? '').' '.($bill['last_name'] ?? ''));
+                    if ($custName === '') {
+                        $custName = trim(($order->lead?->first_name ?? '').' '.($order->lead?->last_name ?? ''));
+                    }
+                    $custEmail = $order->user?->email ?? ($bill['email'] ?? $order->lead?->email);
                 @endphp
                 <tr>
                     <td>
@@ -64,8 +77,8 @@
                         </a>
                     </td>
                     <td>
-                        <div style="font-weight: 500;">{{ $order->user?->name ?? 'Guest' }}</div>
-                        <div class="text-muted text-sm">{{ $order->user?->email ?? ($order->shipping_address['email'] ?? '—') }}</div>
+                        <div style="font-weight: 500;">{{ $custName !== '' ? $custName : 'Guest' }}</div>
+                        <div class="text-muted text-sm">{{ $custEmail ?? '—' }}</div>
                     </td>
                     <td class="text-muted">{{ $order->items?->sum('quantity') ?? '—' }}</td>
                     <td class="mono">${{ number_format($order->total, 2) }}</td>

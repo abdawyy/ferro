@@ -19,9 +19,11 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\ShopCatalogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CheckoutOrderController;
+use App\Http\Controllers\CheckoutPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
@@ -52,7 +54,7 @@ Route::get('/shop', [ProductController::class, 'index'])->name('products.index')
 Route::get('/shop/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 Route::view('/cart', 'cart')->name('cart');
-Route::view('/checkout', 'checkout.index')->name('checkout');
+Route::get('/checkout', CheckoutPageController::class)->name('checkout');
 Route::post('/checkout/order', [CheckoutOrderController::class, 'store'])
     ->middleware('throttle:30,1')
     ->name('checkout.order');
@@ -63,6 +65,9 @@ Route::get('/order/thanks/{order}', [CheckoutOrderController::class, 'thanks'])
 Route::prefix('api')->group(function () {
     Route::get('/cart/count', [CartController::class, 'count'])->name('api.cart.count');
     Route::post('/cart/add', [CartController::class, 'add'])->name('api.cart.add');
+    Route::get('/shop/catalog', [ShopCatalogController::class, 'show'])
+        ->middleware('throttle:120,1')
+        ->name('api.shop.catalog');
 });
 
 // ── Lead capture ───────────────────────────────────────────────────────────
@@ -124,7 +129,11 @@ Route::middleware(['auth', 'admin'])
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
         // Products — full CRUD + image management
+        Route::post('products/{product}/restore', [Admin\ProductController::class, 'restore'])->name('products.restore');
         Route::resource('products', Admin\ProductController::class);
+        Route::resource('product-categories', Admin\ProductCategoryController::class)->except(['show']);
+        Route::resource('shop-quick-filters', Admin\ShopQuickFilterController::class)->except(['show']);
+        Route::resource('shipping-cities', Admin\ShippingCityController::class)->except(['show']);
         Route::post('products/{product}/images', [Admin\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('products/{product}/images/{index}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
 

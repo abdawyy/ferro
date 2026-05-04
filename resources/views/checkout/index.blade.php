@@ -13,15 +13,26 @@
             'phone'     => '',
         ];
     }
+    $shippingCityRates = $shippingCities->map(function ($c) use ($isAr) {
+        $loc = $isAr ? 'ar' : 'en';
+
+        return [
+            'slug' => $c->slug,
+            'fee' => (float) $c->shipping_price,
+            'currency' => $c->currency,
+            'label' => $c->getTranslation('name', $loc, false)
+                ?? $c->getTranslation('name', 'en', false)
+                ?? (string) $c->name,
+        ];
+    })->values();
 @endphp
 
 @section('seo_title', $isAr ? 'إتمام الطلب — فيرو' : 'Checkout — FERRO')
 
 @section('content')
 
-<div id="checkout-app" class="pt-[72px] min-h-screen" x-data="ferroCheckout(@js($checkoutPrefill))" x-bind:data-cart-email="info.email || ''">
+<div id="checkout-app" class="pt-[72px] min-h-screen" x-data="ferroCheckout(@js($checkoutPrefill), @js($shippingCityRates), @js($isAr))" x-bind:data-cart-email="info.email || ''">
 
-    {{-- Header --}}
     <div class="bg-ferro-obsidian border-b border-ferro-carbon">
         <div class="container-ferro py-8">
             <div class="flex items-center justify-between">
@@ -31,12 +42,10 @@
                     </svg>
                     <span class="font-display text-xl tracking-[0.2em] text-ferro-white uppercase">FERRO</span>
                 </a>
-                {{-- Step progress --}}
                 <div class="hidden sm:flex items-center gap-2 text-xs">
                     @foreach([
                         ['key' => 1, 'label_en' => 'Information', 'label_ar' => 'المعلومات'],
-                        ['key' => 2, 'label_en' => 'Shipping',    'label_ar' => 'الشحن'],
-                        ['key' => 3, 'label_en' => 'Payment',     'label_ar' => 'الدفع'],
+                        ['key' => 2, 'label_en' => 'Shipping & COD', 'label_ar' => 'الشحن والدفع'],
                     ] as $s)
                         <div class="flex items-center gap-2">
                             <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300"
@@ -63,10 +72,8 @@
     <div class="container-ferro section-pad">
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
-            {{-- ── Left: Form steps ──────────────────────────────────── --}}
             <div class="lg:col-span-3">
 
-                {{-- Step 1: Information --}}
                 <div x-show="step === 1" x-transition>
                     <h2 class="font-display text-2xl text-ferro-white mb-8 {{ $isAr ? 'text-right' : '' }}">
                         {{ $isAr ? 'معلومات الاتصال' : 'Contact Information' }}
@@ -102,7 +109,7 @@
                                     : 'Email me about new products and exclusive offers. Unsubscribe anytime.' }}
                             </span>
                         </label>
-                        <button @click="step = 2" class="btn-primary w-full clip-luxury-md">
+                        <button type="button" @click="step = 2" class="btn-primary w-full clip-luxury-md">
                             {{ $isAr ? 'متابعة إلى الشحن' : 'Continue to Shipping' }}
                             <svg class="w-4 h-4 {{ $isAr ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
@@ -111,57 +118,39 @@
                     </div>
                 </div>
 
-                {{-- Step 2: Shipping --}}
                 <div x-show="step === 2" x-transition>
                     <h2 class="font-display text-2xl text-ferro-white mb-8 {{ $isAr ? 'text-right' : '' }}">
-                        {{ $isAr ? 'عنوان الشحن' : 'Shipping Address' }}
+                        {{ $isAr ? 'الشحن والدفع عند الاستلام' : 'Shipping & cash on delivery' }}
                     </h2>
                     <div class="space-y-5">
+                        <input type="hidden" x-model="shipping.country">
+
                         <div>
-                            <label class="form-label" for="address">{{ $isAr ? 'العنوان' : 'Address' }}</label>
-                            <input type="text" id="address" x-model="shipping.address" class="input-ferro" autocomplete="address-line1">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
-                                <label class="form-label" for="city">{{ $isAr ? 'المدينة' : 'City' }}</label>
-                                <input type="text" id="city" x-model="shipping.city" class="input-ferro" autocomplete="address-level2">
-                            </div>
-                            <div>
-                                <label class="form-label" for="country">{{ $isAr ? 'الدولة' : 'Country' }}</label>
-                                <select id="country" x-model="shipping.country" class="input-ferro">
-                                    <option value="">{{ $isAr ? 'اختر الدولة' : 'Select country' }}</option>
-                                    <option value="AE">{{ $isAr ? 'الإمارات' : 'UAE' }}</option>
-                                    <option value="SA">{{ $isAr ? 'السعودية' : 'Saudi Arabia' }}</option>
-                                    <option value="KW">{{ $isAr ? 'الكويت' : 'Kuwait' }}</option>
-                                    <option value="QA">{{ $isAr ? 'قطر' : 'Qatar' }}</option>
-                                    <option value="BH">{{ $isAr ? 'البحرين' : 'Bahrain' }}</option>
-                                    <option value="OM">{{ $isAr ? 'عُمان' : 'Oman' }}</option>
-                                    <option value="US">{{ $isAr ? 'الولايات المتحدة' : 'United States' }}</option>
-                                    <option value="GB">{{ $isAr ? 'المملكة المتحدة' : 'United Kingdom' }}</option>
-                                </select>
-                            </div>
+                            <label class="form-label" for="governorate">{{ $isAr ? 'المحافظة' : 'Governorate' }}</label>
+                            <select id="governorate" x-model="shipping.city_slug" class="input-ferro" required>
+                                <template x-for="c in cityRates" :key="c.slug">
+                                    <option :value="c.slug" x-text="c.label"></option>
+                                </template>
+                            </select>
+                            <p class="text-ferro-ash text-xs mt-2">
+                                {{ $isAr ? 'يتم احتساب رسوم الشحن حسب المحافظة (قابلة للتعديل من لوحة التحكم).' : 'Delivery fee is set per governorate (editable in admin).' }}
+                            </p>
                         </div>
 
-                        {{-- Shipping methods --}}
-                        <div class="mt-6">
-                            <p class="form-label mb-3">{{ $isAr ? 'طريقة الشحن' : 'Shipping Method' }}</p>
-                            <div class="space-y-3">
-                                @foreach([
-                                    ['value' => 'standard', 'label_en' => 'Standard (3–5 days)',   'label_ar' => 'عادي (٣–٥ أيام)',   'price_en' => 'Free',  'price_ar' => 'مجاني'],
-                                    ['value' => 'express',  'label_en' => 'Express (1–2 days)',    'label_ar' => 'سريع (١–٢ يومين)',  'price_en' => '$12',   'price_ar' => '١٢$'],
-                                    ['value' => 'overnight','label_en' => 'Overnight',             'label_ar' => 'ليلة واحدة',        'price_en' => '$25',   'price_ar' => '٢٥$'],
-                                ] as $method)
-                                    <label class="flex items-center justify-between gap-4 bg-ferro-carbon/30 border border-ferro-carbon hover:border-ferro-orange/40 transition-all duration-200 p-4 cursor-pointer"
-                                           :class="shipping.method === '{{ $method['value'] }}' ? 'border-ferro-orange bg-ferro-orange/5' : ''"
-                                           style="border-radius: 2px;">
-                                        <div class="flex items-center gap-3 {{ $isAr ? 'flex-row-reverse' : '' }}">
-                                            <input type="radio" name="shipping_method" value="{{ $method['value'] }}" x-model="shipping.method" class="accent-ferro-orange w-4 h-4">
-                                            <span class="text-ferro-white text-body-sm">{{ $isAr ? $method['label_ar'] : $method['label_en'] }}</span>
-                                        </div>
-                                        <span class="text-ferro-orange font-semibold text-body-sm">{{ $isAr ? $method['price_ar'] : $method['price_en'] }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
+                        <div>
+                            <label class="form-label" for="address">{{ $isAr ? 'العنوان بالتفصيل' : 'Street address' }}</label>
+                            <input type="text" id="address" x-model="shipping.address" class="input-ferro" autocomplete="address-line1" required>
+                        </div>
+
+                        <div class="bg-ferro-carbon/30 border border-ferro-carbon p-5" style="border-radius: 2px;">
+                            <p class="text-ferro-white text-sm font-semibold mb-2">
+                                {{ $isAr ? 'الدفع عند الاستلام فقط' : 'Cash on delivery only' }}
+                            </p>
+                            <p class="text-ferro-silver text-body-sm leading-relaxed">
+                                {{ $isAr
+                                    ? 'لا نقبل البطاقات عبر الموقع حالياً. سيدفع عند التسليم نقداً للمندوب.'
+                                    : 'Card payments are disabled for now. You will pay the courier in cash when your order arrives.' }}
+                            </p>
                         </div>
 
                         <div>
@@ -170,54 +159,11 @@
                         </div>
 
                         <div class="flex gap-3 mt-6 {{ $isAr ? 'flex-row-reverse' : '' }}">
-                            <button @click="step = 1" class="btn-secondary clip-luxury-sm">
+                            <button type="button" @click="step = 1" class="btn-secondary clip-luxury-sm">
                                 {{ $isAr ? 'رجوع' : 'Back' }}
                             </button>
-                            <button @click="step = 3" class="btn-primary flex-1 clip-luxury-md">
-                                {{ $isAr ? 'متابعة إلى الدفع' : 'Continue to Payment' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Step 3: Payment --}}
-                <div x-show="step === 3" x-transition>
-                    <h2 class="font-display text-2xl text-ferro-white mb-8 {{ $isAr ? 'text-right' : '' }}">
-                        {{ $isAr ? 'معلومات الدفع' : 'Payment' }}
-                    </h2>
-                    <div class="space-y-5">
-                        <div class="bg-ferro-carbon/30 border border-ferro-carbon p-6 text-center" style="border-radius: 2px;">
-                            <p class="text-ferro-silver text-body-sm mb-2">
-                                {{ $isAr ? 'مدعوم بواسطة' : 'Powered by' }}
-                            </p>
-                            <p class="text-ferro-white text-body-sm font-medium">
-                                {{ $isAr ? 'Stripe · آمن وموثوق' : 'Stripe · Secure & Trusted' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="form-label" for="card-name">{{ $isAr ? 'الاسم على البطاقة' : 'Name on Card' }}</label>
-                            <input type="text" id="card-name" x-model="payment.cardName" class="input-ferro" autocomplete="cc-name">
-                        </div>
-
-                        {{-- Stripe card element placeholder --}}
-                        <div>
-                            <label class="form-label" for="stripe-card-element">{{ $isAr ? 'رقم البطاقة' : 'Card Number' }}</label>
-                            <div id="stripe-card-element" class="input-ferro py-4">
-                                {{-- Stripe.js mounts here --}}
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 text-ferro-ash text-xs">
-                            🔒 {{ $isAr ? 'بياناتك محمية ومشفرة بالكامل' : 'Your payment data is fully encrypted and secure' }}
-                        </div>
-
-                        <div class="flex gap-3 {{ $isAr ? 'flex-row-reverse' : '' }}">
-                            <button @click="step = 2" class="btn-secondary clip-luxury-sm">
-                                {{ $isAr ? 'رجوع' : 'Back' }}
-                            </button>
-                            <button @click="placeOrder()" class="btn-primary flex-1 clip-luxury-md" :disabled="loading">
-                                <span x-show="!loading">{{ $isAr ? 'تأكيد الطلب' : 'Place Order' }}</span>
+                            <button type="button" @click="placeOrder()" class="btn-primary flex-1 clip-luxury-md" :disabled="loading">
+                                <span x-show="!loading">{{ $isAr ? 'تأكيد الطلب' : 'Place order' }}</span>
                                 <span x-show="loading" class="flex items-center gap-2" x-cloak>
                                     <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -231,11 +177,10 @@
                 </div>
             </div>
 
-            {{-- ── Right: Mini order summary ──────────────────────────── --}}
             <div class="lg:col-span-2">
                 <div class="bg-ferro-obsidian border border-ferro-carbon p-6 sticky top-[90px]" style="border-radius: 2px;">
                     <h3 class="font-display text-lg text-ferro-white mb-5 {{ $isAr ? 'text-right' : '' }}">
-                        {{ $isAr ? 'ملخص طلبك' : 'Your Order' }}
+                        {{ $isAr ? 'ملخص طلبك' : 'Your order' }}
                     </h3>
 
                     <div class="space-y-3 mb-6">
@@ -248,7 +193,7 @@
                                 <div class="flex-1 min-w-0 {{ $isAr ? 'text-right' : '' }}">
                                     <p class="text-ferro-white text-xs font-medium leading-snug" x-text="item.name"></p>
                                 </div>
-                                <span class="text-ferro-white text-xs font-semibold flex-shrink-0" x-text="'$' + (item.price * item.qty).toFixed(2)"></span>
+                                <span class="text-ferro-white text-xs font-semibold flex-shrink-0" x-text="formatMoney(item.price * item.qty)"></span>
                             </div>
                         </template>
                     </div>
@@ -256,19 +201,19 @@
                     <div class="divider pt-4 space-y-2 text-body-sm {{ $isAr ? 'text-right' : '' }}">
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'المجموع' : 'Subtotal' }}</span>
-                            <span class="text-ferro-white" x-text="'$' + subtotal.toFixed(2)"></span>
+                            <span class="text-ferro-white" x-text="formatMoney(subtotal)"></span>
                         </div>
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الشحن' : 'Shipping' }}</span>
-                            <span class="text-ferro-white" x-text="shipping.method === 'standard' ? '{{ $isAr ? 'مجاني' : 'Free' }}' : ('$' + shippingCost.toFixed(2))"></span>
+                            <span class="text-ferro-white" x-text="formatMoney(shippingCost)"></span>
                         </div>
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
-                            <span class="text-ferro-silver">{{ $isAr ? 'الضريبة 5%' : 'Tax 5%' }}</span>
-                            <span class="text-ferro-white" x-text="'$' + taxAmount.toFixed(2)"></span>
+                            <span class="text-ferro-silver">{{ $isAr ? 'الضريبة ٥٪' : 'Tax (5%)' }}</span>
+                            <span class="text-ferro-white" x-text="formatMoney(taxAmount)"></span>
                         </div>
                         <div class="flex justify-between font-semibold pt-2 border-t border-ferro-carbon {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-white">{{ $isAr ? 'الإجمالي' : 'Total' }}</span>
-                            <span class="text-ferro-orange text-lg" x-text="'$' + orderTotal.toFixed(2)"></span>
+                            <span class="text-ferro-orange text-lg" x-text="formatMoney(orderTotal)"></span>
                         </div>
                     </div>
                 </div>
@@ -282,17 +227,19 @@
 
 @push('scripts')
 <script>
-function ferroCheckout(prefill) {
+function ferroCheckout(prefill, cityRates, isAr) {
     const cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
-    const rates = { standard: 0, express: 12, overnight: 25 };
     const pf = (prefill && typeof prefill === 'object' && !Array.isArray(prefill)) ? prefill : {};
+    const rates = Array.isArray(cityRates) ? cityRates : [];
+    const defaultSlug = rates[0]?.slug || '';
+
     return {
         step: 1,
         loading: false,
         cartItems: cart,
+        cityRates: rates,
         info: { firstName: '', lastName: '', email: '', phone: '', ...pf },
-        shipping: { address: '', city: '', country: '', method: 'standard' },
-        payment: { cardName: '' },
+        shipping: { address: '', city_slug: defaultSlug, country: 'EG' },
         marketingConsent: false,
         hearAboutUs: '',
         customerNotes: '',
@@ -302,8 +249,12 @@ function ferroCheckout(prefill) {
                 window.location.href = @json(route('cart'));
                 return;
             }
+            if (!this.shipping.city_slug && defaultSlug) {
+                this.shipping.city_slug = defaultSlug;
+            }
             this.$watch('cartItems', () => this.syncBeaconCart(), { deep: true });
             this.$watch('info.email', () => this.syncBeaconCart());
+            this.$watch('shipping.city_slug', () => this.syncBeaconCart());
             this.syncBeaconCart();
         },
 
@@ -314,12 +265,29 @@ function ferroCheckout(prefill) {
             };
         },
 
+        moneyCurrency() {
+            return this.cartItems[0]?.currency || 'EGP';
+        },
+
+        formatMoney(amount) {
+            const n = Number(amount) || 0;
+            const cur = this.moneyCurrency();
+            if (cur === 'USD') return '$' + n.toFixed(2);
+            if (cur === 'EGP') return 'E£' + n.toFixed(2);
+            return cur + ' ' + n.toFixed(2);
+        },
+
+        selectedCity() {
+            return this.cityRates.find((c) => c.slug === this.shipping.city_slug) || this.cityRates[0] || null;
+        },
+
         get subtotal() {
             return this.cartItems.reduce((s, i) => s + (i.price * i.qty), 0);
         },
 
         get shippingCost() {
-            return rates[this.shipping.method] ?? 0;
+            const c = this.selectedCity();
+            return c ? Number(c.fee) || 0 : 0;
         },
 
         get taxAmount() {
@@ -332,7 +300,15 @@ function ferroCheckout(prefill) {
 
         async placeOrder() {
             if (!this.cartItems.length) {
-                showToast('{{ $isAr ? 'سلتك فارغة' : 'Your cart is empty.' }}', 'error');
+                showToast(isAr ? 'سلتك فارغة' : 'Your cart is empty.', 'error');
+                return;
+            }
+            if (!this.shipping.address?.trim()) {
+                showToast(isAr ? 'يرجى إدخال العنوان.' : 'Please enter your address.', 'error');
+                return;
+            }
+            if (!this.shipping.city_slug) {
+                showToast(isAr ? 'يرجى اختيار المحافظة.' : 'Please choose a governorate.', 'error');
                 return;
             }
             this.loading = true;
@@ -348,9 +324,8 @@ function ferroCheckout(prefill) {
                     },
                     shipping: {
                         address: this.shipping.address,
-                        city: this.shipping.city,
-                        country: this.shipping.country,
-                        method: this.shipping.method,
+                        city_slug: this.shipping.city_slug,
+                        country: 'EG',
                     },
                     marketing_consent: this.marketingConsent,
                     hear_about_us: this.hearAboutUs || null,
@@ -370,24 +345,22 @@ function ferroCheckout(prefill) {
                 if (!res.ok || !data.success) {
                     const msg = data.message
                         || (data.errors && Object.values(data.errors).flat().join(' '))
-                        || '{{ $isAr ? 'تعذر إتمام الطلب.' : 'Could not place order.' }}';
+                        || (isAr ? 'تعذر إتمام الطلب.' : 'Could not place order.');
                     showToast(msg, 'error');
                     this.loading = false;
                     return;
                 }
                 localStorage.setItem('ferro_cart', '[]');
-                const badge = document.getElementById('cart-badge');
-                if (badge) {
-                    badge.classList.add('hidden');
-                    badge.textContent = '0';
+                if (typeof window.ferroSyncCartBadges === 'function') {
+                    window.ferroSyncCartBadges(0);
                 }
                 if (data.redirect) {
                     window.location.href = data.redirect;
                     return;
                 }
-                showToast('{{ $isAr ? 'تم تأكيد طلبك!' : 'Order confirmed!' }}', 'success');
+                showToast(isAr ? 'تم تأكيد طلبك!' : 'Order confirmed!', 'success');
             } catch (e) {
-                showToast('{{ $isAr ? 'خطأ في الشبكة.' : 'Network error.' }}', 'error');
+                showToast(isAr ? 'خطأ في الشبكة.' : 'Network error.', 'error');
             }
             this.loading = false;
         },

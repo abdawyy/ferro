@@ -121,9 +121,9 @@
             </p>
         @endif
 
-        {{-- Price + CTA row --}}
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-            <div class="min-w-0 shrink" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        {{-- Price + CTA row (quick-add: always stacked so buttons never overlap price) --}}
+        <div class="flex flex-col gap-3 w-full min-w-0 {{ ($showQuickAdd ?? false) ? '' : 'sm:flex-row sm:items-end sm:justify-between sm:gap-3' }}">
+            <div class="min-w-0 shrink w-full {{ ($showQuickAdd ?? false) ? '' : 'sm:w-auto' }}" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                 <meta itemprop="priceCurrency" content="{{ $product->currency }}">
                 @if($isComingSoon)
                     <span class="text-ferro-orange text-label tracking-widest uppercase font-semibold">
@@ -152,6 +152,20 @@
                 <a href="{{ $pdpUrl }}#pdp-restock" class="btn-secondary px-4 py-2 text-xs shrink-0 text-center">
                     {{ $isAr ? 'أشعرني' : 'Notify Me' }}
                 </a>
+            @elseif($showQuickAdd ?? false)
+                <div class="flex flex-wrap items-stretch sm:items-center gap-2 w-full {{ $isAr ? 'justify-end' : 'justify-start' }}">
+                    <button
+                        type="button"
+                        class="btn-primary px-3 py-2 text-[11px] uppercase tracking-wider clip-luxury-sm"
+                        data-ferro-add-to-cart="{{ $product->id }}"
+                        data-ferro-add-qty="1"
+                    >
+                        {{ $isAr ? 'أضف للسلة' : 'Add to cart' }}
+                    </button>
+                    <a href="{{ $pdpUrl }}" class="btn-secondary px-3 py-2 text-[11px] uppercase tracking-wider text-center">
+                        {{ $isAr ? 'التفاصيل' : 'Details' }}
+                    </a>
+                </div>
             @else
                 <a href="{{ $pdpUrl }}" class="btn-primary px-4 py-2 text-xs clip-luxury-sm shrink-0 text-center">
                     {{ $isAr ? 'اشترِ الآن' : 'Shop Now' }}

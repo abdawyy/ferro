@@ -120,6 +120,19 @@
                     </div>
                 </div>
 
+                <div class="form-group" style="margin-top: 16px; max-width: 420px;">
+                    <label class="form-label" for="category_id">Shop category</label>
+                    <select id="category_id" name="category_id" class="form-input form-select">
+                        <option value="">— None —</option>
+                        @foreach($categories as $c)
+                        <option value="{{ $c->id }}" {{ (string) old('category_id', $product->category_id ?? '') === (string) $c->id ? 'selected' : '' }}>
+                            {{ $c->getTranslation('name', 'en') }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('category_id')<div class="form-error">{{ $message }}</div>@enderror
+                </div>
+
                 <div style="display: flex; gap: 24px; flex-wrap: wrap;">
                     @foreach(['is_featured' => '⭐ Featured on homepage', 'is_new_arrival' => '🆕 New Arrival badge', 'is_best_seller' => '🏆 Best Seller badge'] as $field => $label)
                     <label class="form-check">

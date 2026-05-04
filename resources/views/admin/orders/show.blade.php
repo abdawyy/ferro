@@ -83,8 +83,25 @@
         <div class="admin-card">
             <div class="admin-card-header"><h2 class="admin-card-title">Customer & Shipping</h2></div>
             <div class="admin-card-body">
+                @php
+                    $bill = $order->billing_address ?? [];
+                    $guestName = trim(($bill['first_name'] ?? '').' '.($bill['last_name'] ?? ''));
+                    $guestEmail = $bill['email'] ?? $order->lead?->email;
+                    $guestPhone = $bill['phone'] ?? ($order->shipping_address['phone'] ?? null);
+                @endphp
+
+                @if(!$order->user && ($guestName !== '' || $guestEmail))
+                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--admin-border);">
+                    <div class="form-label" style="margin-bottom: 6px;">Guest checkout</div>
+                    <div style="font-weight: 600;">{{ $guestName !== '' ? $guestName : '—' }}</div>
+                    @if($guestEmail)<div class="text-muted text-sm">{{ $guestEmail }}</div>@endif
+                    @if($guestPhone)<div class="text-muted text-sm">📞 {{ $guestPhone }}</div>@endif
+                </div>
+                @endif
+
                 @if($order->user)
                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--admin-border);">
+                    <div class="form-label" style="margin-bottom: 6px;">Account</div>
                     <div style="font-weight: 600;">{{ $order->user->name }}</div>
                     <div class="text-muted text-sm">{{ $order->user->email }}</div>
                     <a href="{{ route('admin.users.show', $order->user) }}" class="btn btn-secondary btn-xs" style="margin-top: 8px;">View Account</a>

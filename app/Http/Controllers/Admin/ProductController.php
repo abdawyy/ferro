@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,7 +38,9 @@ class ProductController extends Controller
 
     public function create(): View
     {
-        return view('admin.products.edit', ['product' => new Product(), 'editing' => false]);
+        $categories = ProductCategory::orderBy('sort_order')->get();
+
+        return view('admin.products.edit', ['product' => new Product(), 'editing' => false, 'categories' => $categories]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -70,7 +73,9 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        return view('admin.products.edit', ['product' => $product, 'editing' => true]);
+        $categories = ProductCategory::orderBy('sort_order')->get();
+
+        return view('admin.products.edit', ['product' => $product, 'editing' => true, 'categories' => $categories]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -106,6 +111,19 @@ class ProductController extends Controller
         $product->delete(); // SoftDeletes
         return redirect()->route('admin.products.index')
             ->with('success', "Product archived (soft-deleted).");
+    }
+
+    public function restore(Product $product): RedirectResponse
+    {
+        if (! $product->trashed()) {
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product is not archived.');
+        }
+
+        $product->restore();
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product restored and visible in the catalogue again.');
     }
 
     /**
@@ -181,6 +199,7 @@ class ProductController extends Controller
             'is_new_arrival'       => 'boolean',
             'is_best_seller'       => 'boolean',
             'sort_order'           => 'integer|min:0',
+            'category_id'          => 'nullable|exists:product_categories,id',
             'seo_title_en'         => 'nullable|string|max:300',
             'seo_description_en'   => 'nullable|string|max:500',
             'featured_image'       => 'nullable|image|max:5120',
@@ -208,6 +227,7 @@ class ProductController extends Controller
             'is_new_arrival'    => $request->boolean('is_new_arrival'),
             'is_best_seller'    => $request->boolean('is_best_seller'),
             'sort_order'        => $request->input('sort_order', 0),
+            'category_id'       => $request->input('category_id') ?: null,
         ];
     }
 }

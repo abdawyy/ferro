@@ -183,7 +183,7 @@
         {{-- Product grid --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 reveal-stagger">
             @forelse($featuredProducts as $product)
-                @include('partials.product-card', ['product' => $product])
+                @include('partials.product-card', ['product' => $product, 'showQuickAdd' => true])
             @empty
                 {{-- Coming soon placeholder cards --}}
                 @foreach(range(1, 4) as $i)

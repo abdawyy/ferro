@@ -4,6 +4,9 @@
         ['section' => 'Core'],
         ['name' => 'Dashboard',  'route' => 'admin.dashboard',     'icon' => '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',  'match' => 'admin.dashboard'],
         ['name' => 'Products',   'route' => 'admin.products.index', 'icon' => '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>', 'match' => 'admin.products'],
+        ['name' => 'Categories', 'route' => 'admin.product-categories.index', 'icon' => '<path d="M4 6h16M4 12h16M4 18h7"/>', 'match' => 'admin.product-categories'],
+        ['name' => 'Shop filters','route' => 'admin.shop-quick-filters.index', 'icon' => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>', 'match' => 'admin.shop-quick-filters'],
+        ['name' => 'Shipping (EG)','route' => 'admin.shipping-cities.index', 'icon' => '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>', 'match' => 'admin.shipping-cities'],
         ['name' => 'Orders',     'route' => 'admin.orders.index',   'icon' => '<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>',                                    'match' => 'admin.orders'],
         ['name' => 'Pages / CMS','route' => 'admin.pages.index',    'icon' => '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',  'match' => 'admin.pages'],
 

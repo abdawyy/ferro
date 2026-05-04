@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
@@ -48,14 +50,23 @@ class CartController extends Controller
         $name = $product->getTranslation('name', $locale, false) ?: $product->getTranslation('name', 'en', false) ?: $product->name;
         $category = $product->category?->getTranslation('name', $locale, false) ?? $product->category?->name ?? '';
 
-        $image = $product->featured_image
-            ? asset($product->featured_image)
-            : '';
+        $image = '';
+        if ($product->featured_image) {
+            $fi = $product->featured_image;
+            if (Str::startsWith($fi, ['http://', 'https://', '//'])) {
+                $image = $fi;
+            } elseif (Str::startsWith($fi, 'images/')) {
+                $image = asset($fi);
+            } else {
+                $image = Storage::disk('public')->url($fi);
+            }
+        }
 
         $item = [
             'id' => $product->id,
             'name' => $name,
             'price' => (float) $product->price,
+            'currency' => $product->currency ?? 'EGP',
             'qty' => $qty,
             'image' => $image,
             'url' => route('products.show', $product->slug),

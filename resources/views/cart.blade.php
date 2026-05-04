@@ -87,7 +87,7 @@
                         </div>
                         <div class="flex justify-between text-body-sm {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الشحن' : 'Shipping' }}</span>
-                            <span class="text-green-400 text-xs font-medium">{{ $isAr ? 'مجاني' : 'Free' }}</span>
+                            <span class="text-ferro-ash text-xs font-medium">{{ $isAr ? 'يُحسب عند الدفع' : 'Calculated at checkout' }}</span>
                         </div>
                         <div class="flex justify-between text-body-sm {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الضريبة (5%)' : 'Tax (5%)' }}</span>
@@ -168,7 +168,11 @@ function ferroCart() {
         },
 
         formatPrice(v) {
-            return '$' + v.toFixed(2);
+            const cur = (this.items[0] && this.items[0].currency) || 'EGP';
+            const n = Number(v) || 0;
+            if (cur === 'USD') return '$' + n.toFixed(2);
+            if (cur === 'EGP') return 'E£' + n.toFixed(2);
+            return cur + ' ' + n.toFixed(2);
         },
 
         updateQty(id, qty) {
@@ -182,16 +186,14 @@ function ferroCart() {
         removeItem(id) {
             this.items = this.items.filter(i => i.id !== id);
             this.persist();
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                const total = this.items.reduce((s, i) => s + i.qty, 0);
-                badge.textContent = total;
-                if (total === 0) badge.classList.add('hidden');
-            }
         },
 
         persist() {
             localStorage.setItem('ferro_cart', JSON.stringify(this.items));
+            const total = this.items.reduce((s, i) => s + Number(i.qty || 0), 0);
+            if (typeof window.ferroSyncCartBadges === 'function') {
+                window.ferroSyncCartBadges(total);
+            }
         }
     };
 }

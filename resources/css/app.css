@@ -99,6 +99,16 @@
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes ferro-cart-badge-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.35); }
+    70%  { transform: scale(0.92); }
+    100% { transform: scale(1); }
+}
+[data-ferro-cart-badge].ferro-cart-badge-pop {
+    animation: ferro-cart-badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 /* ── Base ───────────────────────────────────────────────────────────────────── */
 html {
     scroll-behavior: smooth;
@@ -385,6 +395,55 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
 
     &:hover:not(:focus) {
         border-color: color-mix(in srgb, var(--color-ferro-silver, #B0B0B0) 40%, transparent);
+    }
+}
+
+/* Quantity stepper (cart + PDP) — override browser number field chrome */
+@utility qty-stepper {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--color-ferro-carbon, #2A2A2A);
+    border-radius: 4px;
+    background: var(--color-ferro-black-soft, #111111);
+    overflow: hidden;
+
+    & button {
+        width: 2.5rem;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-ferro-obsidian, #1a1a1a);
+        color: var(--color-ferro-off-white, #f5f2ee);
+        font-size: 1.1rem;
+        line-height: 1;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+    & button:hover {
+        background: var(--color-ferro-carbon, #2a2a2a);
+        color: var(--color-ferro-white, #ffffff);
+    }
+
+    & input[type="number"] {
+        width: 3.25rem;
+        min-width: 3.25rem;
+        border: none;
+        border-inline: 1px solid var(--color-ferro-carbon, #2a2a2a);
+        background: var(--color-ferro-black, #0a0a0a);
+        color: var(--color-ferro-white, #ffffff);
+        text-align: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
+    & input[type="number"]::-webkit-outer-spin-button,
+    & input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 }
 

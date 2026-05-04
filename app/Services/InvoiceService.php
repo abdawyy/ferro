@@ -182,6 +182,7 @@ class InvoiceService
         return match ($order->currency) {
             'USD' => '$',
             'AED' => 'AED',
+            'EGP' => 'E£',
             default => (string) $order->currency,
         };
     }

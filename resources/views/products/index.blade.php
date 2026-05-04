@@ -1,6 +1,6 @@
-﻿{{--
+{{--
     FERRO — Shop / Product Listing Page
-    Variables: $products (LengthAwarePaginator), $categories (Collection)
+    Variables: $products, $categories, $shopQuickFilters (collections / paginator)
 --}}
 @extends('layouts.app')
 
@@ -13,6 +13,26 @@
 
 @section('seo_title',       $isAr ? 'المتجر — FERRO' : 'Shop — FERRO')
 @section('seo_description', $isAr ? 'تسوّق منتجات العناية الفاخرة المصممة للرجل عالي الأداء.' : 'Shop premium luxury grooming essentials engineered for the high-performance man.')
+
+@push('head')
+<style>
+    #shop-catalog-progress-track {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+    #ferro-shop.shop-catalog-loading #shop-catalog-progress-track {
+        opacity: 1;
+    }
+    #shop-catalog-progress-bar {
+        width: 38%;
+        animation: ferro-shop-progress-slide 0.95s ease-in-out infinite;
+    }
+    @keyframes ferro-shop-progress-slide {
+        from { transform: translateX(-105%); }
+        to { transform: translateX(320%); }
+    }
+</style>
+@endpush
 
 @section('content')
 
@@ -37,8 +57,9 @@
                 : 'Nature-powered formulas refined for the man who demands performance and precision.' }}
         </p>
         {{-- result count --}}
-        <p class="mt-4 text-ferro-ash text-sm">
-            {{ $products->total() }} {{ $isAr ? 'منتج' : ($products->total() === 1 ? 'product' : 'products') }}
+        <p class="mt-4 text-ferro-ash text-sm" id="shop-hero-count" data-shop-hero-count>
+            <span data-shop-total>{{ $products->total() }}</span>
+            {{ $isAr ? 'منتج' : ($products->total() === 1 ? 'product' : 'products') }}
             @if($q !== '')
                 — {{ $isAr ? 'نتائج البحث عن' : 'for' }} “{{ \Illuminate\Support\Str::limit($q, 48) }}”
             @endif
@@ -49,132 +70,51 @@
     <div class="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-ferro-black to-transparent pointer-events-none"></div>
 </section>
 
-{{-- ── Filter Bar ───────────────────────────────────────────────────────── --}}
-<section class="sticky top-[72px] z-40 bg-ferro-black/95 backdrop-blur-xl border-b border-ferro-carbon/60">
+{{-- ── Filter Bar (categories + quick filters from admin; AJAX on this page) ─ --}}
+<section class="sticky top-[72px] z-40 bg-ferro-black/95 backdrop-blur-xl border-b border-ferro-carbon/60 relative"
+         id="ferro-shop"
+         data-shop-catalog-url="{{ route('api.shop.catalog') }}"
+         data-shop-path="{{ parse_url(route('products.index'), PHP_URL_PATH) }}">
+    <div id="shop-catalog-progress-track" class="pointer-events-none absolute bottom-0 left-0 right-0 z-[60] h-[3px] overflow-hidden bg-ferro-carbon/40" aria-hidden="true">
+        <div id="shop-catalog-progress-bar" class="h-full rounded-full bg-gradient-to-r from-ferro-orange/30 via-ferro-orange to-ferro-orange/30 shadow-[0_0_14px_rgba(232,80,10,0.45)]"></div>
+    </div>
     <div class="container-ferro">
-        <div class="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide">
+        <div class="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide md:flex-wrap md:overflow-x-visible md:gap-y-2 touch-pan-x">
 
-            {{-- All --}}
             <a href="{{ route('products.index', array_filter(request()->only('q'))) }}"
-               class="filter-pill {{ $active === '' && $status === '' ? 'active' : '' }}">
+               class="filter-pill shop-filter-nav flex-shrink-0 {{ $active === '' && $status === '' ? 'active' : '' }}"
+               data-shop-all="1">
                 {{ $isAr ? 'الكل' : 'All' }}
             </a>
 
-            {{-- Category pills --}}
             @foreach($categories as $cat)
                 <a href="{{ route('products.index', array_filter(array_merge(request()->only('q'), ['category' => $cat->slug]))) }}"
-                   class="filter-pill {{ $active === $cat->slug ? 'active' : '' }}">
+                   class="filter-pill shop-filter-nav flex-shrink-0 {{ $active === $cat->slug ? 'active' : '' }}"
+                   data-shop-category="{{ $cat->slug }}">
                     {{ $cat->getTranslation('name', app()->getLocale(), false) ?? $cat->name }}
                 </a>
             @endforeach
 
-            {{-- Status separator + pills --}}
-            <span class="w-px h-5 bg-ferro-carbon/80 mx-1 flex-shrink-0"></span>
+            @if($shopQuickFilters->isNotEmpty())
+                <span class="w-px h-5 bg-ferro-carbon/80 mx-1 flex-shrink-0 max-md:hidden md:inline-block" aria-hidden="true"></span>
+                <span class="w-full h-px bg-ferro-carbon/80 my-1 md:hidden flex-shrink-0 basis-full" aria-hidden="true"></span>
 
-            <a href="{{ route('products.index', array_merge(request()->except('status', 'page'), ['status' => 'active'])) }}"
-               class="filter-pill {{ $status === 'active' ? 'active' : '' }}">
-                {{ $isAr ? 'متاح' : 'In Stock' }}
-            </a>
-
-            <a href="{{ route('products.index', array_merge(request()->except('status', 'page'), ['status' => 'coming_soon'])) }}"
-               class="filter-pill {{ $status === 'coming_soon' ? 'active' : '' }}">
-                {{ $isAr ? 'قريباً' : 'Coming Soon' }}
-            </a>
+                @foreach($shopQuickFilters as $qf)
+                    <a href="{{ route('products.index', array_filter(array_merge(request()->except('status', 'page'), ['status' => $qf->product_status]))) }}"
+                       class="filter-pill shop-filter-nav flex-shrink-0 {{ $status === $qf->product_status ? 'active' : '' }}"
+                       data-shop-status="{{ $qf->product_status }}">
+                        {{ $qf->getTranslation('name', app()->getLocale(), false) ?? $qf->name }}
+                    </a>
+                @endforeach
+            @endif
         </div>
     </div>
 </section>
 
-{{-- ── Products Grid ────────────────────────────────────────────────────── --}}
+{{-- ── Products Grid (fragment replaced via AJAX) ───────────────────────── --}}
 <section class="section-pad">
-    <div class="container-ferro">
-
-        @if($products->isEmpty())
-            {{-- Empty state --}}
-            <div class="flex flex-col items-center justify-center py-32 text-center gap-6">
-                <div class="w-20 h-20 rounded-full bg-ferro-carbon/50 flex items-center justify-center">
-                    <svg class="w-10 h-10 text-ferro-ash" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="font-display text-2xl text-ferro-white mb-2">
-                        {{ $isAr ? 'لا توجد منتجات' : 'No Products Found' }}
-                    </h2>
-                    <p class="text-ferro-ash text-sm max-w-xs mx-auto">
-                        {{ $isAr ? 'جرّب تصفية مختلفة أو تصفّح كامل المجموعة.' : 'Try a different filter or browse the full collection.' }}
-                    </p>
-                </div>
-                <a href="{{ route('products.index') }}" class="btn-secondary">
-                    {{ $isAr ? 'عرض الكل' : 'View All' }}
-                </a>
-            </div>
-
-        @else
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 reveal-stagger">
-                @foreach($products as $product)
-                    @include('partials.product-card', ['product' => $product])
-                @endforeach
-            </div>
-
-            {{-- ── Pagination ──────────────────────────────────────────── --}}
-            @if($products->hasPages())
-                <div class="mt-16 flex items-center justify-center gap-3">
-                    {{-- Prev --}}
-                    @if($products->onFirstPage())
-                        <span class="pagination-btn opacity-30 cursor-not-allowed" aria-disabled="true">
-                            @if($isAr)
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                            @else
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                            @endif
-                        </span>
-                    @else
-                        <a href="{{ $products->previousPageUrl() }}" class="pagination-btn" aria-label="{{ $isAr ? 'السابق' : 'Previous' }}">
-                            @if($isAr)
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                            @else
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                            @endif
-                        </a>
-                    @endif
-
-                    {{-- Page numbers --}}
-                    @foreach($products->getUrlRange(max(1, $products->currentPage() - 2), min($products->lastPage(), $products->currentPage() + 2)) as $page => $url)
-                        @if($page === $products->currentPage())
-                            <span class="pagination-btn active" aria-current="page">{{ $page }}</span>
-                        @else
-                            <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
-                        @endif
-                    @endforeach
-
-                    {{-- Next --}}
-                    @if($products->hasMorePages())
-                        <a href="{{ $products->nextPageUrl() }}" class="pagination-btn" aria-label="{{ $isAr ? 'التالي' : 'Next' }}">
-                            @if($isAr)
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                            @else
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                            @endif
-                        </a>
-                    @else
-                        <span class="pagination-btn opacity-30 cursor-not-allowed" aria-disabled="true">
-                            @if($isAr)
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                            @else
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                            @endif
-                        </span>
-                    @endif
-                </div>
-                <p class="text-center text-ferro-ash text-xs mt-4">
-                    {{ $isAr
-                        ? "صفحة {$products->currentPage()} من {$products->lastPage()}"
-                        : "Page {$products->currentPage()} of {$products->lastPage()}" }}
-                </p>
-            @endif
-        @endif
-
+    <div class="container-ferro" id="shop-catalog-mount">
+        @include('products.partials.shop-results', ['products' => $products])
     </div>
 </section>
 
@@ -225,13 +165,128 @@
 @verbatim
 <script>
 (function () {
-    // Reveal stagger on product grid
-    const grids = document.querySelectorAll('.reveal-stagger');
-    if (!grids.length) return;
-    const obs = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.05 });
-    grids.forEach(g => obs.observe(g));
+    function bindRevealStagger(root) {
+        const grids = root.querySelectorAll('.reveal-stagger');
+        if (!grids.length) return;
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('is-visible');
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.05 });
+        grids.forEach(g => obs.observe(g));
+    }
+
+    bindRevealStagger(document);
+
+    const shop = document.getElementById('ferro-shop');
+    const mount = document.getElementById('shop-catalog-mount');
+    const totalEl = document.querySelector('[data-shop-total]');
+    const catalogUrl = shop && shop.dataset.shopCatalogUrl;
+    const shopPath = shop && shop.dataset.shopPath;
+    if (!shop || !mount || !catalogUrl || !shopPath) return;
+
+    let inflight = null;
+    let loadGeneration = 0;
+
+    function setCatalogLoading(on) {
+        shop.classList.toggle('shop-catalog-loading', on);
+    }
+
+    function shopListPath(pathname) {
+        const p = (pathname || '').replace(/\/$/, '') || '/';
+        const target = (shopPath || '').replace(/\/$/, '') || '/';
+        return p === target;
+    }
+
+    function syncPills(search) {
+        const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+        const cat = params.get('category') || '';
+        const st = params.get('status') || '';
+        shop.querySelectorAll('a.shop-filter-nav').forEach((a) => {
+            let on = false;
+            if (a.getAttribute('data-shop-all') === '1') {
+                on = cat === '' && st === '';
+            } else if (a.hasAttribute('data-shop-status')) {
+                on = st === (a.getAttribute('data-shop-status') || '');
+            } else if (a.hasAttribute('data-shop-category')) {
+                on = cat === (a.getAttribute('data-shop-category') || '');
+            }
+            a.classList.toggle('active', on);
+        });
+    }
+
+    function updateTotal(n) {
+        if (totalEl) totalEl.textContent = String(n);
+    }
+
+    function loadCatalog(search, push) {
+        const qs = search.startsWith('?') ? search.slice(1) : search;
+        const url = qs ? catalogUrl + '?' + qs : catalogUrl;
+        if (inflight) inflight.abort();
+        inflight = new AbortController();
+        const gen = ++loadGeneration;
+        setCatalogLoading(true);
+        mount.setAttribute('aria-busy', 'true');
+        fetch(url, {
+            signal: inflight.signal,
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then((r) => {
+                if (!r.ok) throw new Error('Network');
+                return r.json();
+            })
+            .then((data) => {
+                mount.innerHTML = data.html;
+                updateTotal(data.total);
+                bindRevealStagger(mount);
+                syncPills(qs ? '?' + qs : '');
+                if (push) {
+                    const path = shopPath.startsWith('/') ? shopPath : '/' + shopPath;
+                    history.pushState({ shop: true }, '', qs ? path + '?' + qs : path);
+                }
+            })
+            .catch(() => {})
+            .finally(() => {
+                if (gen !== loadGeneration) return;
+                mount.removeAttribute('aria-busy');
+                setCatalogLoading(false);
+            });
+    }
+
+    shop.addEventListener('click', (e) => {
+        const a = e.target.closest('a.shop-filter-nav');
+        if (!a || !shop.contains(a)) return;
+        e.preventDefault();
+        const u = new URL(a.href, window.location.origin);
+        if (!shopListPath(u.pathname)) return;
+        loadCatalog(u.search, true);
+    });
+
+    mount.addEventListener('click', (e) => {
+        const filter = e.target.closest('a.shop-filter-nav');
+        if (filter && mount.contains(filter)) {
+            e.preventDefault();
+            const u = new URL(filter.href, window.location.origin);
+            if (!shopListPath(u.pathname)) return;
+            loadCatalog(u.search, true);
+            return;
+        }
+        const a = e.target.closest('a.shop-ajax-nav');
+        if (!a || !mount.contains(a)) return;
+        e.preventDefault();
+        const u = new URL(a.href, window.location.origin);
+        if (!shopListPath(u.pathname)) return;
+        loadCatalog(u.search, true);
+        const grid = mount.querySelector('.shop-product-grid');
+        if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    window.addEventListener('popstate', () => {
+        loadCatalog(window.location.search, false);
+    });
 })();
 </script>
 @endverbatim

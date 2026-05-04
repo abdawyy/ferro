@@ -266,8 +266,9 @@
                             <button @click="qty = Math.min(10, qty + 1)" type="button" aria-label="{{ $isAr ? 'زيادة' : 'Increase' }}">+</button>
                         </div>
                         <button
+                            type="button"
                             class="btn-primary flex-1 clip-luxury-md"
-                            @click="addToCart({{ $product->id }}, qty)"
+                            @click="window.ferroAddToCart && window.ferroAddToCart({{ $product->id }}, Number(qty) || 1)"
                         >
                             {{ $isAr ? 'أضف إلى السلة' : 'Add to Arsenal' }}
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -408,7 +409,7 @@
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal-stagger">
             @foreach($related as $relatedProduct)
-                @include('partials.product-card', ['product' => $relatedProduct])
+                @include('partials.product-card', ['product' => $relatedProduct, 'showQuickAdd' => true])
             @endforeach
         </div>
     </div>
@@ -424,57 +425,6 @@ function productGallery() {
         activeImage: '{{ $product->featured_image ? asset($product->featured_image) : '' }}',
         setImage(src) { this.activeImage = src; }
     };
-}
-
-function mergeFerroCartItem(item) {
-    let cart = [];
-    try {
-        cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
-    } catch (_) { cart = []; }
-    const idx = cart.findIndex((x) => Number(x.id) === Number(item.id));
-    if (idx >= 0) {
-        cart[idx].qty = Math.min(50, Number(cart[idx].qty || 0) + Number(item.qty || 1));
-    } else {
-        cart.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            qty: Math.min(50, Number(item.qty || 1)),
-            image: item.image || '',
-            url: item.url || '',
-            category: item.category || '',
-        });
-    }
-    localStorage.setItem('ferro_cart', JSON.stringify(cart));
-    return cart.reduce((s, i) => s + Number(i.qty || 0), 0);
-}
-
-function addToCart(productId, qty) {
-    fetch(@json(route('api.cart.add')), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ product_id: productId, quantity: qty }),
-    })
-    .then((r) => r.json())
-    .then((data) => {
-        if (data.success && data.item) {
-            const totalQty = mergeFerroCartItem(data.item);
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                badge.textContent = totalQty;
-                badge.classList.remove('hidden');
-            }
-            showToast('{{ $isAr ? 'أُضيف إلى سلتك!' : 'Added to your arsenal!' }}', 'success');
-        } else {
-            showToast(data.message || '{{ $isAr ? 'تعذر الإضافة' : 'Could not add to cart' }}', 'error');
-        }
-    })
-    .catch(() => showToast('{{ $isAr ? 'خطأ في الشبكة' : 'Network error' }}', 'error'));
 }
 
 // Reveal animations

@@ -14,22 +14,22 @@
     x-data="{ mobileOpen: false, searchOpen: false }"
     @keydown.escape.window="searchOpen = false; mobileOpen = false"
 >
-    {{-- Backdrop blur applied via JS .is-scrolled class --}}
-    <div id="nav-backdrop" class="absolute inset-0 transition-all duration-300 opacity-0 pointer-events-none
+    {{-- Backdrop blur applied via JS .is-scrolled class (z-0 so bar content always paints above) --}}
+    <div id="nav-backdrop" class="absolute inset-0 z-0 transition-all duration-300 opacity-0 pointer-events-none
          bg-ferro-black/90 backdrop-blur-xl border-b border-ferro-carbon/40"
          aria-hidden="true"></div>
 
-    <div class="container-ferro relative">
-        <div class="flex items-center justify-between h-[72px]">
+    <div class="container-ferro relative z-10">
+        <div class="flex items-center justify-between h-[72px] w-full min-w-0 gap-2 sm:gap-4">
 
-            {{-- ── Logotype ──────────────────────────────────────────── --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-3 group" aria-label="FERRO Home">
-                <svg class="w-8 h-8 text-ferro-orange group-hover:scale-110 transition-transform duration-300"
+            {{-- ── Logotype (shrink on narrow screens so actions + hamburger stay visible) ── --}}
+            <a href="{{ route('home') }}" class="flex min-w-0 shrink items-center gap-2 sm:gap-3 group" aria-label="FERRO Home">
+                <svg class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 text-ferro-orange group-hover:scale-110 transition-transform duration-300"
                      viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M4 4h24v6H12v4h14v6H12v8H4V4z" fill="currentColor"/>
                     {{-- Iron "F" letterform --}}
                 </svg>
-                <span class="font-display text-2xl font-semibold tracking-[0.2em] text-ferro-white uppercase">
+                <span class="font-display text-lg sm:text-2xl font-semibold tracking-[0.12em] sm:tracking-[0.2em] text-ferro-white uppercase truncate">
                     FERRO
                 </span>
             </a>
@@ -54,28 +54,28 @@
                 </a>
             </nav>
 
-            {{-- ── Right Side Actions ────────────────────────────────── --}}
-            <div class="flex items-center gap-4">
+            {{-- ── Right Side Actions (tight gaps on xs so hamburger stays on-screen) ── --}}
+            <div class="flex shrink-0 items-center gap-1 sm:gap-3 md:gap-4">
 
                 {{-- Language Toggle --}}
-                <div class="lang-toggle" role="group" aria-label="Language selector">
+                <div class="lang-toggle shrink-0" role="group" aria-label="Language selector">
                     <a href="{{ route('lang.switch', 'en') }}"
-                       class="lang-toggle-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                       class="lang-toggle-btn !px-2.5 !py-1 text-[10px] sm:!px-4 sm:!py-1.5 sm:text-xs {{ app()->getLocale() === 'en' ? 'active' : '' }}"
                        aria-pressed="{{ app()->getLocale() === 'en' ? 'true' : 'false' }}">
                         EN
                     </a>
                     <a href="{{ route('lang.switch', 'ar') }}"
-                       class="lang-toggle-btn {{ app()->getLocale() === 'ar' ? 'active' : '' }}"
+                       class="lang-toggle-btn !px-2.5 !py-1 text-[10px] sm:!px-4 sm:!py-1.5 sm:text-xs {{ app()->getLocale() === 'ar' ? 'active' : '' }}"
                        aria-pressed="{{ app()->getLocale() === 'ar' ? 'true' : 'false' }}">
                         AR
                     </a>
                 </div>
 
                 {{-- Search (icon + panel) --}}
-                <div class="relative">
+                <div class="relative shrink-0">
                     <button
                         type="button"
-                        class="btn-icon"
+                        class="btn-icon shrink-0"
                         @click="searchOpen = !searchOpen; if (searchOpen) { mobileOpen = false; $nextTick(() => $refs.navSearchInput?.focus()) }"
                         :aria-expanded="searchOpen.toString()"
                         aria-controls="nav-search-panel"
@@ -116,17 +116,16 @@
                     </div>
                 </div>
 
-                {{-- Cart icon (desktop) --}}
+                {{-- Cart (mobile: icon + counter; desktop: same) --}}
                 <a href="{{ route('cart') }}"
-                   class="btn-icon hidden lg:flex relative"
+                   class="btn-icon relative flex shrink-0"
                    aria-label="{{ app()->getLocale() === 'ar' ? 'عربة التسوق' : 'Cart' }}">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.853-7.16a4.5 4.5 0 00-4.244-5.756H5.25a4.5 4.5 0 00-4.244 5.756l1.107 4.15A3 3 0 007.5 14.25z"/>
                     </svg>
-                    {{-- Cart badge --}}
-                    <span id="cart-badge"
-                          class="absolute -top-1 -end-1 w-4 h-4 rounded-full bg-ferro-orange text-white text-[10px] font-bold flex items-center justify-center hidden"
+                    <span data-ferro-cart-badge
+                          class="absolute -top-1 -end-1 min-w-4 h-4 px-0.5 rounded-full bg-ferro-orange text-white text-[10px] font-bold flex items-center justify-center hidden origin-center"
                           aria-live="polite">0</span>
                 </a>
 
@@ -143,9 +142,10 @@
                     @endauth
                 </div>
 
-                {{-- Mobile hamburger --}}
+                {{-- Mobile hamburger (z above backdrop; shrink-0 so row overflow cannot clip it) --}}
                 <button
-                    class="lg:hidden btn-icon"
+                    type="button"
+                    class="lg:hidden btn-icon relative z-[20] shrink-0"
                     @click="mobileOpen = !mobileOpen"
                     :aria-expanded="mobileOpen.toString()"
                     aria-controls="mobile-menu"
@@ -172,7 +172,7 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-4"
-        class="lg:hidden bg-ferro-black/95 backdrop-blur-xl border-t border-ferro-carbon"
+        class="lg:hidden relative z-[20] bg-ferro-black/95 backdrop-blur-xl border-t border-ferro-carbon"
         :aria-hidden="(!mobileOpen).toString()"
     >
         <nav class="container-ferro py-8 flex flex-col gap-6">
@@ -184,6 +184,9 @@
             </a>
             <a href="{{ route('quiz') }}"            @click="mobileOpen=false" class="nav-link text-lg">
                 {{ app()->getLocale() === 'ar' ? 'اختبار البشرة' : 'Skin Quiz' }}
+            </a>
+            <a href="{{ route('contact') }}"         @click="mobileOpen=false" class="nav-link text-lg">
+                {{ app()->getLocale() === 'ar' ? 'تواصل' : 'Contact' }}
             </a>
             <div class="divider"></div>
             @auth
