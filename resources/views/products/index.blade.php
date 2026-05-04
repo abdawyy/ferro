@@ -8,6 +8,7 @@
     $isAr   = app()->getLocale() === 'ar';
     $active = request('category', '');
     $status = request('status', '');
+    $q      = request('q', '');
 @endphp
 
 @section('seo_title',       $isAr ? 'المتجر — FERRO' : 'Shop — FERRO')
@@ -38,6 +39,9 @@
         {{-- result count --}}
         <p class="mt-4 text-ferro-ash text-sm">
             {{ $products->total() }} {{ $isAr ? 'منتج' : ($products->total() === 1 ? 'product' : 'products') }}
+            @if($q !== '')
+                — {{ $isAr ? 'نتائج البحث عن' : 'for' }} “{{ \Illuminate\Support\Str::limit($q, 48) }}”
+            @endif
         </p>
     </div>
 
@@ -51,14 +55,14 @@
         <div class="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide">
 
             {{-- All --}}
-            <a href="{{ route('products.index') }}"
+            <a href="{{ route('products.index', array_filter(request()->only('q'))) }}"
                class="filter-pill {{ $active === '' && $status === '' ? 'active' : '' }}">
                 {{ $isAr ? 'الكل' : 'All' }}
             </a>
 
             {{-- Category pills --}}
             @foreach($categories as $cat)
-                <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
+                <a href="{{ route('products.index', array_filter(array_merge(request()->only('q'), ['category' => $cat->slug]))) }}"
                    class="filter-pill {{ $active === $cat->slug ? 'active' : '' }}">
                     {{ $cat->getTranslation('name', app()->getLocale(), false) ?? $cat->name }}
                 </a>

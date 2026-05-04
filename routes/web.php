@@ -1,4 +1,5 @@
 <?php
+
 // ─────────────────────────────────────────────────────────────────────────────
 // FERRO — Web Routes
 // Sitemap:
@@ -16,29 +17,31 @@
 //   /invoices/{number}    Invoice download
 // ─────────────────────────────────────────────────────────────────────────────
 
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CheckoutOrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\Admin;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Models\Order;
 use App\Services\InvoiceService;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // ── Language toggle ────────────────────────────────────────────────────────
 Route::get('/lang/{locale}', [LanguageController::class, 'switch'])
-     ->name('lang.switch')
-     ->where('locale', 'en|ar');
+    ->name('lang.switch')
+    ->where('locale', 'en|ar');
 
 // ── Authentication ─────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('/login',    [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login',   [LoginController::class, 'login']);
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register',[RegisterController::class, 'register']);
+    Route::post('/register', [RegisterController::class, 'register']);
 });
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
@@ -47,6 +50,20 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/shop', [ProductController::class, 'index'])->name('products.index');
 Route::get('/shop/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+Route::view('/cart', 'cart')->name('cart');
+Route::view('/checkout', 'checkout.index')->name('checkout');
+Route::post('/checkout/order', [CheckoutOrderController::class, 'store'])
+    ->middleware('throttle:30,1')
+    ->name('checkout.order');
+Route::get('/order/thanks/{order}', [CheckoutOrderController::class, 'thanks'])
+    ->middleware('signed')
+    ->name('order.thanks');
+
+Route::prefix('api')->group(function () {
+    Route::get('/cart/count', [CartController::class, 'count'])->name('api.cart.count');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('api.cart.add');
+});
 
 // ── Lead capture ───────────────────────────────────────────────────────────
 Route::post('/waitlist', [LeadController::class, 'storeWaitlist'])->name('waitlist.store');
@@ -60,21 +77,20 @@ Route::view('/contact', 'contact')->name('contact');
 
 // ── Authenticated routes ───────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
-    Route::view('/cart', 'cart')->name('cart');
-    Route::view('/checkout', 'checkout.index')->name('checkout');
     Route::get('/account', function () {
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.dashboard');
         }
-        $orders = \App\Models\Order::where('user_id', auth()->id())
-                    ->latest()
-                    ->get();
+        $orders = Order::where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
         return view('account.index', compact('orders'));
     })->name('account');
     Route::get('/orders/{orderNumber}', fn (string $orderNumber) => view('account.order', [
-        'order' => \App\Models\Order::where('order_number', $orderNumber)
-                    ->where('user_id', auth()->id())
-                    ->firstOrFail(),
+        'order' => Order::where('order_number', $orderNumber)
+            ->where('user_id', auth()->id())
+            ->firstOrFail(),
     ]))->name('orders.show');
 
     // Invoice PDF download (always regenerates so the latest template is used)
@@ -86,7 +102,7 @@ Route::middleware(['auth'])->group(function () {
         try {
             app(InvoiceService::class)->generate($order->fresh(['items', 'user', 'lead']));
             $order->refresh();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             abort(503, 'Invoice is not available yet. Please try again later.');
         }
 

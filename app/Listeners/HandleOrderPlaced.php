@@ -3,10 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\OrderPlaced;
+use App\Exceptions\InvoiceArithmeticException;
 use App\Mail\Admin\NewOrderAlert;
 use App\Mail\User\OrderConfirmation;
 use App\Services\InvoiceService;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -14,11 +15,12 @@ use Illuminate\Support\Facades\Mail;
  *  1. Generate PDF invoice (with arithmetic validation)
  *  2. Send branded order confirmation to customer (localized)
  *  3. Send real-time admin alert
+ *
+ * Runs synchronously so confirmations work without a queue worker. For high
+ * volume, switch to queued sends via config below.
  */
-class HandleOrderPlaced implements ShouldQueue
+class HandleOrderPlaced
 {
-    public string $queue = 'notifications';
-
     public function __construct(private InvoiceService $invoiceService) {}
 
     public function handle(OrderPlaced $event): void
@@ -28,11 +30,11 @@ class HandleOrderPlaced implements ShouldQueue
         // Step 1 — Generate invoice PDF (throws on arithmetic error)
         try {
             $pdfPath = $this->invoiceService->generate($order);
-        } catch (\App\Exceptions\InvoiceArithmeticException $e) {
+        } catch (InvoiceArithmeticException $e) {
             // Log critical error — do not silently fail
-            \Log::critical('Invoice arithmetic error', [
+            Log::critical('Invoice arithmetic error', [
                 'order_number' => $order->order_number,
-                'error'        => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
             // Still send order confirmation but without invoice attachment
             $pdfPath = null;
@@ -44,13 +46,33 @@ class HandleOrderPlaced implements ShouldQueue
             ?? $order->billing_address['email'] ?? null;
 
         if ($recipientEmail) {
-            Mail::to($recipientEmail)
-                ->locale($order->language)
-                ->queue(new OrderConfirmation($order, $pdfPath));
+            try {
+                $mailable = new OrderConfirmation($order, $pdfPath);
+                if (config('ferro.mail.queue', false) === true) {
+                    Mail::to($recipientEmail)->locale($order->language)->queue($mailable);
+                } else {
+                    Mail::to($recipientEmail)->locale($order->language)->send($mailable);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Order confirmation email failed', [
+                    'order' => $order->order_number,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        // Step 3 — Admin alert (real-time, high priority queue)
-        Mail::to(config('ferro.admin_email'))
-            ->queue((new NewOrderAlert($order))->onQueue('high'));
+        try {
+            $adminMail = new NewOrderAlert($order);
+            if (config('ferro.mail.queue', false) === true) {
+                Mail::to(config('ferro.admin_email'))->queue($adminMail);
+            } else {
+                Mail::to(config('ferro.admin_email'))->send($adminMail);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Admin new-order email failed', [
+                'order' => $order->order_number,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

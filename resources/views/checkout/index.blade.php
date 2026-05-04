@@ -1,12 +1,25 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $checkoutPrefill = [];
+    if (auth()->check()) {
+        $u = auth()->user();
+        $parts = preg_split('/\s+/', trim($u->name), 2, PREG_SPLIT_NO_EMPTY);
+        $checkoutPrefill = [
+            'firstName' => $parts[0] ?? '',
+            'lastName'  => isset($parts[1]) ? $parts[1] : '',
+            'email'     => $u->email,
+            'phone'     => '',
+        ];
+    }
+@endphp
 
 @section('seo_title', $isAr ? 'إتمام الطلب — فيرو' : 'Checkout — FERRO')
 
 @section('content')
 
-<div class="pt-[72px] min-h-screen" x-data="ferroCheckout()">
+<div id="checkout-app" class="pt-[72px] min-h-screen" x-data="ferroCheckout(@js($checkoutPrefill))" x-bind:data-cart-email="info.email || ''">
 
     {{-- Header --}}
     <div class="bg-ferro-obsidian border-b border-ferro-carbon">
@@ -77,6 +90,18 @@
                             <label class="form-label" for="phone">{{ $isAr ? 'رقم الهاتف' : 'Phone' }}</label>
                             <input type="tel" id="phone" x-model="info.phone" class="input-ferro" autocomplete="tel">
                         </div>
+                        <div>
+                            <label class="form-label" for="hear-about">{{ $isAr ? 'كيف سمعت عنا؟ (اختياري)' : 'How did you hear about us? (optional)' }}</label>
+                            <input type="text" id="hear-about" x-model="hearAboutUs" class="input-ferro" maxlength="120" placeholder="{{ $isAr ? 'مثال: إنستغرام، صديق…' : 'e.g. Instagram, friend…' }}">
+                        </div>
+                        <label class="flex items-start gap-3 cursor-pointer {{ $isAr ? 'flex-row-reverse text-right' : '' }}">
+                            <input type="checkbox" x-model="marketingConsent" class="accent-ferro-orange mt-1 w-4 h-4 shrink-0">
+                            <span class="text-ferro-silver text-sm leading-relaxed">
+                                {{ $isAr
+                                    ? 'أرغب في تلقي أخبار العروض والمنتجات عبر البريد. يمكنني إلغاء الاشتراك في أي وقت.'
+                                    : 'Email me about new products and exclusive offers. Unsubscribe anytime.' }}
+                            </span>
+                        </label>
                         <button @click="step = 2" class="btn-primary w-full clip-luxury-md">
                             {{ $isAr ? 'متابعة إلى الشحن' : 'Continue to Shipping' }}
                             <svg class="w-4 h-4 {{ $isAr ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -137,6 +162,11 @@
                                     </label>
                                 @endforeach
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label" for="order-notes">{{ $isAr ? 'ملاحظات الطلب (اختياري)' : 'Order notes (optional)' }}</label>
+                            <textarea id="order-notes" x-model="customerNotes" class="input-ferro min-h-[88px]" maxlength="2000" placeholder="{{ $isAr ? 'تعليمات التوصيل…' : 'Delivery instructions…' }}"></textarea>
                         </div>
 
                         <div class="flex gap-3 mt-6 {{ $isAr ? 'flex-row-reverse' : '' }}">
@@ -229,12 +259,16 @@
                             <span class="text-ferro-white" x-text="'$' + subtotal.toFixed(2)"></span>
                         </div>
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
+                            <span class="text-ferro-silver">{{ $isAr ? 'الشحن' : 'Shipping' }}</span>
+                            <span class="text-ferro-white" x-text="shipping.method === 'standard' ? '{{ $isAr ? 'مجاني' : 'Free' }}' : ('$' + shippingCost.toFixed(2))"></span>
+                        </div>
+                        <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الضريبة 5%' : 'Tax 5%' }}</span>
-                            <span class="text-ferro-white" x-text="'$' + (subtotal * 0.05).toFixed(2)"></span>
+                            <span class="text-ferro-white" x-text="'$' + taxAmount.toFixed(2)"></span>
                         </div>
                         <div class="flex justify-between font-semibold pt-2 border-t border-ferro-carbon {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-white">{{ $isAr ? 'الإجمالي' : 'Total' }}</span>
-                            <span class="text-ferro-orange text-lg" x-text="'$' + (subtotal * 1.05).toFixed(2)"></span>
+                            <span class="text-ferro-orange text-lg" x-text="'$' + orderTotal.toFixed(2)"></span>
                         </div>
                     </div>
                 </div>
@@ -248,28 +282,115 @@
 
 @push('scripts')
 <script>
-function ferroCheckout() {
+function ferroCheckout(prefill) {
     const cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
+    const rates = { standard: 0, express: 12, overnight: 25 };
+    const pf = (prefill && typeof prefill === 'object' && !Array.isArray(prefill)) ? prefill : {};
     return {
         step: 1,
         loading: false,
         cartItems: cart,
-        info:     { firstName: '', lastName: '', email: '', phone: '' },
+        info: { firstName: '', lastName: '', email: '', phone: '', ...pf },
         shipping: { address: '', city: '', country: '', method: 'standard' },
-        payment:  { cardName: '' },
+        payment: { cardName: '' },
+        marketingConsent: false,
+        hearAboutUs: '',
+        customerNotes: '',
+
+        init() {
+            if (!this.cartItems.length) {
+                window.location.href = @json(route('cart'));
+                return;
+            }
+            this.$watch('cartItems', () => this.syncBeaconCart(), { deep: true });
+            this.$watch('info.email', () => this.syncBeaconCart());
+            this.syncBeaconCart();
+        },
+
+        syncBeaconCart() {
+            window.__FERRO_CART__ = {
+                items: this.cartItems.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price })),
+                total: this.orderTotal,
+            };
+        },
 
         get subtotal() {
             return this.cartItems.reduce((s, i) => s + (i.price * i.qty), 0);
         },
 
-        placeOrder() {
+        get shippingCost() {
+            return rates[this.shipping.method] ?? 0;
+        },
+
+        get taxAmount() {
+            return +(this.subtotal * 0.05).toFixed(2);
+        },
+
+        get orderTotal() {
+            return +(this.subtotal + this.shippingCost + this.taxAmount).toFixed(2);
+        },
+
+        async placeOrder() {
+            if (!this.cartItems.length) {
+                showToast('{{ $isAr ? 'سلتك فارغة' : 'Your cart is empty.' }}', 'error');
+                return;
+            }
             this.loading = true;
-            // Stripe.js integration endpoint
-            setTimeout(() => {
-                showToast('{{ $isAr ? 'تم تأكيد طلبك! شكراً لك.' : 'Order confirmed! Thank you.' }}', 'success');
-                this.loading = false;
-            }, 2000);
-        }
+            try {
+                const token = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                const body = {
+                    items: this.cartItems.map(i => ({ id: i.id, quantity: i.qty })),
+                    contact: {
+                        first_name: this.info.firstName,
+                        last_name: this.info.lastName,
+                        email: this.info.email,
+                        phone: this.info.phone || null,
+                    },
+                    shipping: {
+                        address: this.shipping.address,
+                        city: this.shipping.city,
+                        country: this.shipping.country,
+                        method: this.shipping.method,
+                    },
+                    marketing_consent: this.marketingConsent,
+                    hear_about_us: this.hearAboutUs || null,
+                    customer_notes: this.customerNotes || null,
+                };
+                const res = await fetch(@json(route('checkout.order')), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    const msg = data.message
+                        || (data.errors && Object.values(data.errors).flat().join(' '))
+                        || '{{ $isAr ? 'تعذر إتمام الطلب.' : 'Could not place order.' }}';
+                    showToast(msg, 'error');
+                    this.loading = false;
+                    return;
+                }
+                localStorage.setItem('ferro_cart', '[]');
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.classList.add('hidden');
+                    badge.textContent = '0';
+                }
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                showToast('{{ $isAr ? 'تم تأكيد طلبك!' : 'Order confirmed!' }}', 'success');
+            } catch (e) {
+                showToast('{{ $isAr ? 'خطأ في الشبكة.' : 'Network error.' }}', 'error');
+            }
+            this.loading = false;
+        },
     };
 }
 </script>

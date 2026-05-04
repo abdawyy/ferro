@@ -26,7 +26,17 @@ class ProductController extends Controller
             $query->where('status', $request->status);
         }
 
-        $products   = $query->paginate(12)->withQueryString();
+        if ($request->filled('q')) {
+            $term = '%'.addcslashes(trim($request->input('q')), '%_\\').'%';
+            $query->where(function ($w) use ($term) {
+                $w->where('sku', 'like', $term)
+                    ->orWhere('slug', 'like', $term)
+                    ->orWhere('name->en', 'like', $term)
+                    ->orWhere('name->ar', 'like', $term);
+            });
+        }
+
+        $products = $query->paginate(12)->withQueryString();
         $categories = ProductCategory::where('is_active', true)->orderBy('sort_order')->get();
 
         return view('products.index', compact('products', 'categories'));
@@ -51,10 +61,10 @@ class ProductController extends Controller
             ->get();
 
         // SEO: structured data for current locale
-        $locale     = app()->getLocale();
-        $schemaOrg  = $product->toSchemaOrg($locale);
-        $seoTitle   = $product->getSeoTitleForLocale($locale);
-        $seoDesc    = $product->getTranslation('seo_description', $locale, false)
+        $locale = app()->getLocale();
+        $schemaOrg = $product->toSchemaOrg($locale);
+        $seoTitle = $product->getSeoTitleForLocale($locale);
+        $seoDesc = $product->getTranslation('seo_description', $locale, false)
                       ?? strip_tags(substr($product->getTranslation('short_description', $locale, false) ?? '', 0, 160));
 
         return view('products.show', compact(

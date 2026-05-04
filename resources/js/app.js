@@ -88,7 +88,16 @@ function initAdminTableMobileLabels() {
     });
 }
 
-// ── Intersection Observer — Reveal animations ─────────────────────────────
+function ferroCartQtyFromStorage() {
+    try {
+        const cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
+        return cart.reduce((s, i) => s + Number(i.qty || 0), 0);
+    } catch {
+        return 0;
+    }
+}
+
+// ── Intersection Observer — Reveal animations + cart badge ────────────────
 document.addEventListener('DOMContentLoaded', () => {
     const io = new IntersectionObserver(
         (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
@@ -97,24 +106,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
 
     initAdminTableMobileLabels();
+
+    const badge = document.getElementById('cart-badge');
+    const count = ferroCartQtyFromStorage();
+    if (badge && count > 0) {
+        badge.textContent = String(count);
+        badge.classList.remove('hidden');
+    }
 });
 
 // ── Abandoned cart beacon (fires on page unload from checkout) ────────────
 if (window.location.pathname.startsWith('/checkout')) {
-    const cartEmail = document.querySelector('[data-cart-email]')?.dataset?.cartEmail;
-    const cartData  = window.__FERRO_CART__;
-
-    if (cartEmail && cartData) {
-        window.addEventListener('beforeunload', () => {
-            const data = JSON.stringify({
-                email:      cartEmail,
-                cart_items: cartData.items,
-                cart_value: cartData.total,
-            });
-            // Use sendBeacon for reliability on page unload
-            navigator.sendBeacon('/cart/abandon', new Blob([data], { type: 'application/json' }));
+    window.addEventListener('beforeunload', () => {
+        const email = document.querySelector('[data-cart-email]')?.dataset?.cartEmail?.trim();
+        const cartData = window.__FERRO_CART__;
+        if (!email || !cartData?.items?.length) {
+            return;
+        }
+        const data = JSON.stringify({
+            email,
+            cart_items: cartData.items,
+            cart_value: cartData.total,
         });
-    }
+        navigator.sendBeacon('/cart/abandon', new Blob([data], { type: 'application/json' }));
+    });
 }
 
 // ── Language direction handler ─────────────────────────────────────────────
@@ -127,18 +142,3 @@ document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
     });
 });
 
-// ── Cart count from session (Alpine-free fallback) ────────────────────────
-(async function syncCartBadge() {
-    try {
-        const res = await fetch('/api/cart/count', { headers: { Accept: 'application/json' } });
-        if (!res.ok) return;
-        const { count } = await res.json();
-        const badge = document.getElementById('cart-badge');
-        if (badge && count > 0) {
-            badge.textContent = count;
-            badge.classList.remove('hidden');
-        }
-    } catch {
-        // Silent fail — cart badge is cosmetic
-    }
-})();

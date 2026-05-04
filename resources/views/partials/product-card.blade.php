@@ -9,19 +9,30 @@
     $isAr         = app()->getLocale() === 'ar';
     $isComingSoon = $showComingSoon ?? ($product->status === \App\Models\Product::STATUS_COMING_SOON);
     $isOutOfStock = $product->status === \App\Models\Product::STATUS_OUT_OF_STOCK;
-    $pdpUrl       = $isComingSoon ? '#' : route('products.show', $product->slug);
+    $pdpUrl       = route('products.show', $product->slug);
+    $featuredUrl  = null;
+    if ($product->featured_image) {
+        $fi = $product->featured_image;
+        if (\Illuminate\Support\Str::startsWith($fi, ['http://', 'https://', '//'])) {
+            $featuredUrl = $fi;
+        } elseif (\Illuminate\Support\Str::startsWith($fi, 'images/')) {
+            $featuredUrl = asset($fi);
+        } else {
+            $featuredUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($fi);
+        }
+    }
 @endphp
 
 <article
-    class="card-product group"
+    class="card-product group min-w-0"
     itemscope
     itemtype="https://schema.org/Product"
 >
     {{-- ── Product Image ─────────────────────────────────────────────── --}}
-    <a href="{{ $pdpUrl }}" class="block product-image-wrap" tabindex="{{ $isComingSoon ? '-1' : '0' }}" aria-label="{{ $product->name }}">
-        @if($product->featured_image)
+    <a href="{{ $pdpUrl }}" class="block product-image-wrap" aria-label="{{ $product->name }}">
+        @if($featuredUrl)
             <img
-                src="{{ asset($product->featured_image) }}"
+                src="{{ $featuredUrl }}"
                 alt="{{ $product->name }}"
                 class="w-full h-full object-cover"
                 loading="lazy"
@@ -88,23 +99,19 @@
     </a>
 
     {{-- ── Product Info ──────────────────────────────────────────────── --}}
-    <div class="p-5 {{ $isAr ? 'text-right' : '' }}">
+    <div class="p-5 min-w-0 {{ $isAr ? 'text-right' : '' }}">
         {{-- Category --}}
         @if($product->category)
-            <span class="text-ferro-ash text-[11px] tracking-widest uppercase font-medium mb-1 block">
-                {{ $product->category->name }}
+            <span class="text-ferro-ash text-[11px] tracking-widest uppercase font-medium mb-1 block truncate">
+                {{ $product->category->getTranslation('name', app()->getLocale(), false) ?? $product->category->name }}
             </span>
         @endif
 
         {{-- Name --}}
-        <h3 class="font-display text-lg text-ferro-white mb-1 leading-tight" itemprop="name">
-            @if($isComingSoon)
+        <h3 class="font-display text-lg text-ferro-white mb-1 leading-tight min-w-0" itemprop="name">
+            <a href="{{ $pdpUrl }}" class="hover:text-ferro-orange transition-colors duration-200 line-clamp-2">
                 {{ $product->name }}
-            @else
-                <a href="{{ $pdpUrl }}" class="hover:text-ferro-orange transition-colors duration-200">
-                    {{ $product->name }}
-                </a>
-            @endif
+            </a>
         </h3>
 
         {{-- Short description --}}
@@ -115,21 +122,21 @@
         @endif
 
         {{-- Price + CTA row --}}
-        <div class="flex items-center justify-between gap-3">
-            <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
+            <div class="min-w-0 shrink" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                 <meta itemprop="priceCurrency" content="{{ $product->currency }}">
                 @if($isComingSoon)
                     <span class="text-ferro-orange text-label tracking-widest uppercase font-semibold">
                         {{ $isAr ? 'سعر قريباً' : 'Price TBA' }}
                     </span>
                 @else
-                    <div class="flex items-center gap-2">
-                        <span class="text-ferro-white font-semibold text-base" itemprop="price" content="{{ $product->price }}">
-                            {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format($product->price, 0) }}
+                    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        <span class="text-ferro-white font-semibold text-base tabular-nums" itemprop="price" content="{{ number_format((float) $product->price, 2, '.', '') }}">
+                            {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format((float) $product->price, 2) }}
                         </span>
                         @if($product->is_on_sale)
-                            <span class="text-ferro-ash text-sm line-through">
-                                {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format($product->compare_price, 0) }}
+                            <span class="text-ferro-ash text-sm line-through tabular-nums">
+                                {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format((float) $product->compare_price, 2) }}
                             </span>
                         @endif
                     </div>
@@ -138,18 +145,15 @@
 
             {{-- Action button --}}
             @if($isComingSoon)
-                <button
-                    class="btn-secondary px-4 py-2 text-xs"
-                    onclick="document.getElementById('waitlist-section').scrollIntoView({behavior:'smooth'})"
-                >
+                <a href="{{ $pdpUrl }}#pdp-waitlist" class="btn-secondary px-4 py-2 text-xs shrink-0 text-center">
                     {{ $isAr ? 'أشعرني' : 'Notify Me' }}
-                </button>
+                </a>
             @elseif($isOutOfStock)
-                <button class="btn-secondary px-4 py-2 text-xs opacity-60 cursor-not-allowed" disabled>
-                    {{ $isAr ? 'غير متاح' : 'Unavailable' }}
-                </button>
+                <a href="{{ $pdpUrl }}#pdp-restock" class="btn-secondary px-4 py-2 text-xs shrink-0 text-center">
+                    {{ $isAr ? 'أشعرني' : 'Notify Me' }}
+                </a>
             @else
-                <a href="{{ $pdpUrl }}" class="btn-primary px-4 py-2 text-xs clip-luxury-sm">
+                <a href="{{ $pdpUrl }}" class="btn-primary px-4 py-2 text-xs clip-luxury-sm shrink-0 text-center">
                     {{ $isAr ? 'اشترِ الآن' : 'Shop Now' }}
                 </a>
             @endif

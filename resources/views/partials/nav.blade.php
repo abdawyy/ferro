@@ -11,7 +11,8 @@
     id="site-nav"
     class="fixed top-0 inset-x-0 z-[999] transition-all duration-300"
     style="background: transparent;"
-    x-data="{ mobileOpen: false, cartCount: 0 }"
+    x-data="{ mobileOpen: false, searchOpen: false }"
+    @keydown.escape.window="searchOpen = false; mobileOpen = false"
 >
     {{-- Backdrop blur applied via JS .is-scrolled class --}}
     <div id="nav-backdrop" class="absolute inset-0 transition-all duration-300 opacity-0 pointer-events-none
@@ -68,6 +69,51 @@
                        aria-pressed="{{ app()->getLocale() === 'ar' ? 'true' : 'false' }}">
                         AR
                     </a>
+                </div>
+
+                {{-- Search (icon + panel) --}}
+                <div class="relative">
+                    <button
+                        type="button"
+                        class="btn-icon"
+                        @click="searchOpen = !searchOpen; if (searchOpen) { mobileOpen = false; $nextTick(() => $refs.navSearchInput?.focus()) }"
+                        :aria-expanded="searchOpen.toString()"
+                        aria-controls="nav-search-panel"
+                        aria-label="{{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}"
+                    >
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                        </svg>
+                    </button>
+                    <div
+                        id="nav-search-panel"
+                        x-show="searchOpen"
+                        x-transition
+                        x-cloak
+                        @click.outside="searchOpen = false"
+                        class="fixed z-[1000] p-4 bg-ferro-obsidian border border-ferro-carbon shadow-2xl
+                               start-4 end-4 top-20 w-auto
+                               lg:absolute lg:top-full lg:inset-auto lg:end-0 lg:start-auto lg:w-80 lg:mt-2"
+                    >
+                        <form method="GET" action="{{ route('products.index') }}" class="flex gap-2" role="search" @submit="searchOpen = false">
+                            <label for="nav-search-q" class="sr-only">{{ app()->getLocale() === 'ar' ? 'بحث في المنتجات' : 'Search products' }}</label>
+                            <input
+                                id="nav-search-q"
+                                x-ref="navSearchInput"
+                                type="search"
+                                name="q"
+                                value="{{ request()->routeIs('products.*') ? request('q') : '' }}"
+                                maxlength="120"
+                                placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث بالاسم أو رمز المنتج…' : 'Search by name or SKU…' }}"
+                                class="input-ferro flex-1 min-w-0 !py-2.5 text-sm"
+                                autocomplete="off"
+                            >
+                            <button type="submit" class="btn-primary clip-luxury-sm shrink-0 px-4 text-sm">
+                                {{ app()->getLocale() === 'ar' ? 'بحث' : 'Go' }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 {{-- Cart icon (desktop) --}}

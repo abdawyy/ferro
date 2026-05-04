@@ -231,7 +231,7 @@
                 {{-- ── ADD TO CART / WAITLIST ───────────────────────── --}}
                 @if($isComingSoon)
                     {{-- Coming-soon: waitlist capture inline --}}
-                    <div class="waitlist-card mb-8">
+                    <div id="pdp-waitlist" class="waitlist-card mb-8">
                         <p class="text-ferro-silver text-body-sm mb-4">
                             {{ $isAr
                                 ? 'سجّل بريدك وكن أول من يعرف حين يتوفر هذا المنتج.'
@@ -243,7 +243,7 @@
                         ])
                     </div>
                 @elseif($isOutOfStock)
-                    <div class="mb-8">
+                    <div id="pdp-restock" class="mb-8">
                         <div class="badge-out-of-stock mb-4 inline-flex">
                             {{ $isAr ? 'نفد المخزون حالياً' : 'Currently Out of Stock' }}
                         </div>
@@ -426,30 +426,55 @@ function productGallery() {
     };
 }
 
+function mergeFerroCartItem(item) {
+    let cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem('ferro_cart') || '[]');
+    } catch (_) { cart = []; }
+    const idx = cart.findIndex((x) => Number(x.id) === Number(item.id));
+    if (idx >= 0) {
+        cart[idx].qty = Math.min(50, Number(cart[idx].qty || 0) + Number(item.qty || 1));
+    } else {
+        cart.push({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            qty: Math.min(50, Number(item.qty || 1)),
+            image: item.image || '',
+            url: item.url || '',
+            category: item.category || '',
+        });
+    }
+    localStorage.setItem('ferro_cart', JSON.stringify(cart));
+    return cart.reduce((s, i) => s + Number(i.qty || 0), 0);
+}
+
 function addToCart(productId, qty) {
-    // Cart implementation — sends to cart API or Livewire component
-    fetch('/api/cart/add', {
+    fetch(@json(route('api.cart.add')), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
             'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({ product_id: productId, quantity: qty }),
     })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            // Update cart badge
+    .then((r) => r.json())
+    .then((data) => {
+        if (data.success && data.item) {
+            const totalQty = mergeFerroCartItem(data.item);
             const badge = document.getElementById('cart-badge');
             if (badge) {
-                badge.textContent = data.cart_count;
+                badge.textContent = totalQty;
                 badge.classList.remove('hidden');
             }
-            // Show toast
             showToast('{{ $isAr ? 'أُضيف إلى سلتك!' : 'Added to your arsenal!' }}', 'success');
+        } else {
+            showToast(data.message || '{{ $isAr ? 'تعذر الإضافة' : 'Could not add to cart' }}', 'error');
         }
-    });
+    })
+    .catch(() => showToast('{{ $isAr ? 'خطأ في الشبكة' : 'Network error' }}', 'error'));
 }
 
 // Reveal animations
