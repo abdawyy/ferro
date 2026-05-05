@@ -10,13 +10,12 @@
 <header
     id="site-nav"
     class="fixed top-0 inset-x-0 z-[999] transition-all duration-300"
-    style="background: transparent;"
     x-data="{ mobileOpen: false, searchOpen: false }"
     @keydown.escape.window="searchOpen = false; mobileOpen = false"
 >
-    {{-- Backdrop blur applied via JS .is-scrolled class (z-0 so bar content always paints above) --}}
-    <div id="nav-backdrop" class="absolute inset-0 z-0 transition-all duration-300 opacity-0 pointer-events-none
-         bg-ferro-black/90 backdrop-blur-xl border-b border-ferro-carbon/40"
+    {{-- Always-on dark scrim so links stay readable over bright / white hero photography; strengthens on scroll --}}
+    <div id="nav-backdrop"
+         class="nav-backdrop-layer absolute inset-0 z-0 pointer-events-none border-b border-ferro-carbon/45"
          aria-hidden="true"></div>
 
     <div class="container-ferro relative z-10">
@@ -202,15 +201,15 @@
     </div>
 </header>
 
-{{-- Nav scroll script --}}
+{{-- Nav scroll: slightly stronger bar after scroll (optional polish) --}}
 <script>
 (function () {
-    const nav     = document.getElementById('site-nav');
-    const backdrop= document.getElementById('nav-backdrop');
-    window.addEventListener('scroll', () => {
-        const scrolled = window.scrollY > 20;
-        nav.style.background = scrolled ? 'transparent' : 'transparent';
-        backdrop.style.opacity = scrolled ? '1' : '0';
-    }, { passive: true });
+    const nav = document.getElementById('site-nav');
+    if (!nav) return;
+    const onScroll = () => {
+        nav.classList.toggle('is-scrolled', window.scrollY > 20);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
 })();
 </script>

@@ -625,6 +625,50 @@ img.ferro-brand-photo {
     transform: translateZ(0);
 }
 
+/* ── Site header: readable on any hero (incl. bright / near-white photography) ─ */
+#site-nav #nav-backdrop.nav-backdrop-layer {
+    opacity: 1;
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+}
+
+#site-nav.is-scrolled #nav-backdrop.nav-backdrop-layer {
+    background: rgba(10, 10, 10, 0.94);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-bottom-color: rgba(42, 42, 42, 0.65);
+}
+
+/* Nav text: slight shadow as a second line of defense on edge cases */
+#site-nav a.nav-link {
+    color: var(--ferro-silver);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    transition: color 0.2s;
+}
+#site-nav a.nav-link:hover {
+    color: var(--ferro-white);
+}
+#site-nav a.nav-link.active {
+    color: var(--ferro-orange);
+    text-shadow: none;
+}
+#site-nav .font-display.text-ferro-white {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+#site-nav .btn-icon {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    background: rgba(10, 10, 10, 0.35);
+}
+#site-nav .btn-icon:hover {
+    background: rgba(10, 10, 10, 0.55);
+}
+
 /* ── Quiz: intro step (fits common laptop heights; grid scales all breakpoints) ─ */
 .quiz-intro-step .eyebrow {
     margin-bottom: 0.5rem;
