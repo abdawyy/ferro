@@ -1,8 +1,23 @@
 <?php
 
 use App\Support\Money;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
+if (! function_exists('ferro_request_asset_root')) {
+    /**
+     * Root URL for assets (scheme + host + port + base path).
+     * Uses the current HTTP request when available so image URLs match the browser (e.g. 127.0.0.1:8000),
+     * instead of always using APP_URL (often http://localhost with no port).
+     */
+    function ferro_request_asset_root(): string
+    {
+        if (! app()->runningInConsole() && app()->bound('request') && request()->hasHeader('Host')) {
+            return rtrim(request()->getSchemeAndHttpHost().request()->getBaseUrl(), '/');
+        }
+
+        return rtrim((string) config('app.url'), '/');
+    }
+}
 
 if (! function_exists('ferro_public_url')) {
     /**
@@ -16,11 +31,19 @@ if (! function_exists('ferro_public_url')) {
         if (Str::startsWith($path, ['http://', 'https://', '//'])) {
             return $path;
         }
+
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+        $root = ferro_request_asset_root();
+
         if (Str::startsWith($path, 'images/')) {
-            return asset($path);
+            return $root.'/'.$normalized;
         }
 
-        return Storage::disk('public')->url($path);
+        if (Str::startsWith($normalized, 'storage/')) {
+            return $root.'/'.$normalized;
+        }
+
+        return $root.'/storage/'.$normalized;
     }
 }
 
