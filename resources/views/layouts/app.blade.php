@@ -79,8 +79,9 @@
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
     <meta name="theme-color" content="#0A0A0A">
 
-    {{-- ── Vite (hashed build filenames from manifest) ─────────────────── --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- ── App bundle (manifest <link>/<script> in prod; @vite when dev hot) ── --}}
+    @include('partials.vite-assets')
+
     {{-- ── Page-level head additions ─────────────────────────────────── --}}
     @stack('head')
 </head>
