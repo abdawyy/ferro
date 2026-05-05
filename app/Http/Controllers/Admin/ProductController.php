@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\WaitlistReleased;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -101,7 +102,14 @@ class ProductController extends Controller
             $data['gallery_images'] = $existing;
         }
 
+        $wasComingSoon = $product->status === Product::STATUS_COMING_SOON;
+
         $product->update($data);
+        $product->refresh();
+
+        if ($wasComingSoon && $product->status === Product::STATUS_ACTIVE) {
+            WaitlistReleased::dispatch($product);
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated.');

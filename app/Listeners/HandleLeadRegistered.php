@@ -5,28 +5,44 @@ namespace App\Listeners;
 use App\Events\LeadRegistered;
 use App\Mail\Admin\HighPriorityLeadAlert;
 use App\Mail\User\WaitlistWelcome;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Lead;
+use App\Support\FerroMail;
+use Illuminate\Support\Facades\Log;
 
-class HandleLeadRegistered implements ShouldQueue
+/**
+ * Runs synchronously with the HTTP request (no ShouldQueue) so welcome mail works
+ * without a queue worker when FERRO_MAIL_QUEUE / ferro.mail.queue is false.
+ */
+class HandleLeadRegistered
 {
-    public string $queue = 'notifications';
-
     public function handle(LeadRegistered $event): void
     {
         $lead = $event->lead;
 
-        // 1. Welcome email to lead (localized) — quiz uses on-site copy, not waitlist template
-        if ($lead->source !== \App\Models\Lead::SOURCE_QUIZ) {
-            Mail::to($lead->email)
-                ->locale($lead->preferred_language)
-                ->queue(new WaitlistWelcome($lead));
+        if ($lead->source !== Lead::SOURCE_QUIZ) {
+            try {
+                FerroMail::to($lead->email, new WaitlistWelcome($lead), $lead->preferred_language);
+            } catch (\Throwable $e) {
+                Log::error('Waitlist welcome email failed', [
+                    'lead_id' => $lead->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        // 2. Admin alert only for high/VIP priority leads
-        if (in_array($lead->priority, [\App\Models\Lead::PRIORITY_HIGH, \App\Models\Lead::PRIORITY_VIP])) {
-            Mail::to(config('ferro.admin_email'))
-                ->queue((new HighPriorityLeadAlert($lead))->onQueue('high'));
+        if (in_array($lead->priority, [Lead::PRIORITY_HIGH, Lead::PRIORITY_VIP], true)) {
+            try {
+                FerroMail::toQueuedOn(
+                    config('ferro.admin_email'),
+                    new HighPriorityLeadAlert($lead),
+                    'high'
+                );
+            } catch (\Throwable $e) {
+                Log::error('High-priority lead admin email failed', [
+                    'lead_id' => $lead->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 }

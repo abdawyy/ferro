@@ -10,11 +10,12 @@ use App\Models\Product;
 use App\Models\QuizSession;
 use App\Models\WaitlistEntry;
 use App\Services\QuizRecommendationEngine;
+use App\Support\FerroMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -176,8 +177,18 @@ class LeadController extends Controller
             'email_captured' => true,
         ]);
 
-        Mail::to(config('ferro.admin_email'))
-            ->queue((new QuizSubmissionAlert($lead))->onQueue('notifications'));
+        try {
+            FerroMail::toQueuedOn(
+                config('ferro.admin_email'),
+                new QuizSubmissionAlert($lead),
+                'notifications'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Quiz submission admin email failed', [
+                'lead_id' => $lead->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         LeadRegistered::dispatch($lead);
 

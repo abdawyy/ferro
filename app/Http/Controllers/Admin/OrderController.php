@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderShipped;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\InvoiceService;
@@ -52,16 +53,17 @@ class OrderController extends Controller
     public function show(Order $order): View
     {
         $order->load(['user', 'lead', 'items.product']);
+
         return view('admin.orders.show', compact('order'));
     }
 
     public function updateStatus(Request $request, Order $order): RedirectResponse
     {
         $request->validate([
-            'status'          => 'required|in:pending_payment,confirmed,processing,shipped,delivered,cancelled,refunded',
+            'status' => 'required|in:pending_payment,confirmed,processing,shipped,delivered,cancelled,refunded',
             'tracking_number' => 'nullable|string|max:255',
-            'carrier'         => 'nullable|string|max:100',
-            'admin_notes'     => 'nullable|string|max:1000',
+            'carrier' => 'nullable|string|max:100',
+            'admin_notes' => 'nullable|string|max:1000',
         ]);
 
         $data = ['status' => $request->input('status')];
@@ -82,7 +84,18 @@ class OrderController extends Controller
             $data['delivered_at'] = now();
         }
 
+        $previousStatus = $order->status;
+
         $order->update($data);
+        $order->refresh();
+
+        if ($data['status'] === 'shipped' && $previousStatus !== 'shipped') {
+            OrderShipped::dispatch(
+                $order,
+                (string) ($order->tracking_number ?? ''),
+                (string) ($order->carrier ?? '')
+            );
+        }
 
         return back()->with('success', "Order #{$order->order_number} status updated to {$data['status']}.");
     }
@@ -97,7 +110,7 @@ class OrderController extends Controller
             $order->update(['invoice_pdf_path' => $path]);
             $order->refresh();
         } catch (\Throwable $e) {
-            return back()->with('error', 'Invoice could not be generated: ' . $e->getMessage());
+            return back()->with('error', 'Invoice could not be generated: '.$e->getMessage());
         }
 
         $absolute = Storage::disk('local')->path($order->invoice_pdf_path);

@@ -7,8 +7,8 @@ use App\Exceptions\InvoiceArithmeticException;
 use App\Mail\Admin\NewOrderAlert;
 use App\Mail\User\OrderConfirmation;
 use App\Services\InvoiceService;
+use App\Support\FerroMail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Triggered on OrderPlaced event:
@@ -47,12 +47,7 @@ class HandleOrderPlaced
 
         if ($recipientEmail) {
             try {
-                $mailable = new OrderConfirmation($order, $pdfPath);
-                if (config('ferro.mail.queue', false) === true) {
-                    Mail::to($recipientEmail)->locale($order->language)->queue($mailable);
-                } else {
-                    Mail::to($recipientEmail)->locale($order->language)->send($mailable);
-                }
+                FerroMail::to($recipientEmail, new OrderConfirmation($order, $pdfPath), $order->language);
             } catch (\Throwable $e) {
                 Log::error('Order confirmation email failed', [
                     'order' => $order->order_number,
@@ -62,12 +57,7 @@ class HandleOrderPlaced
         }
 
         try {
-            $adminMail = new NewOrderAlert($order);
-            if (config('ferro.mail.queue', false) === true) {
-                Mail::to(config('ferro.admin_email'))->queue($adminMail);
-            } else {
-                Mail::to(config('ferro.admin_email'))->send($adminMail);
-            }
+            FerroMail::to(config('ferro.admin_email'), new NewOrderAlert($order));
         } catch (\Throwable $e) {
             Log::error('Admin new-order email failed', [
                 'order' => $order->order_number,
