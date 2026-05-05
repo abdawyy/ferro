@@ -170,9 +170,10 @@ function ferroCart() {
         formatPrice(v) {
             const cur = (this.items[0] && this.items[0].currency) || 'EGP';
             const n = Number(v) || 0;
-            if (cur === 'USD') return '$' + n.toFixed(2);
-            if (cur === 'EGP') return 'E£' + n.toFixed(2);
-            return cur + ' ' + n.toFixed(2);
+            const u = String(cur).toUpperCase();
+            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' LE';
+            if (u === 'AED') return n.toFixed(2) + ' AED';
+            return n.toFixed(2) + ' ' + u;
         },
 
         updateQty(id, qty) {

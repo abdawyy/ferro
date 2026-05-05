@@ -37,23 +37,23 @@
 
     {{-- ── Schema.org — Organization (sitewide) ─────────────────────── --}}
     <script type="application/ld+json">
-    {
-        "@@context": "https://schema.org",
-        "@@type": "Organization",
-        "name": "FERRO",
-        "url": "{{ url('/') }}",
-        "logo": "{{ asset('images/brand/ferro-hex-logo.png') }}",
-        "description": "Premium nature-powered grooming essentials engineered for the high-performance man.",
-        "sameAs": [
-            "https://instagram.com/ferrogrooming",
-            "https://tiktok.com/@ferrogrooming"
-        ],
-        "contactPoint": {
-            "@@type": "ContactPoint",
-            "contactType": "customer service",
-            "email": "support@ferro.com"
-        }
-    }
+    @php
+        $ferroOrg = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => 'FERRO',
+            'url' => url('/'),
+            'logo' => asset('images/brand/ferro-hex-logo.png'),
+            'description' => 'Premium nature-powered grooming essentials engineered for the high-performance man.',
+            'sameAs' => $contactSetting->sameAsLinks(),
+            'contactPoint' => [
+                '@type' => 'ContactPoint',
+                'contactType' => 'customer service',
+                'email' => $contactSetting->support_email,
+            ],
+        ];
+    @endphp
+    {!! json_encode($ferroOrg, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) !!}
     </script>
 
     {{-- ── Page-specific Schema.org ──────────────────────────────────── --}}

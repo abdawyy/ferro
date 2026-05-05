@@ -13,9 +13,13 @@ class SetLocale
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        $locale = session('locale', config('app.locale', 'en'));
+        if ($request->is('admin') || $request->is('admin/*')) {
+            $locale = session('admin_locale', 'en');
+        } else {
+            $locale = session('locale', config('app.locale', 'en'));
+        }
 
-        if (in_array($locale, ['en', 'ar'])) {
+        if (in_array($locale, ['en', 'ar'], true)) {
             app()->setLocale($locale);
         }
 

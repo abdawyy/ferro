@@ -18,6 +18,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Admin\AdminLanguageController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ShopCatalogController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutOrderController;
 use App\Http\Controllers\CheckoutPageController;
+use App\Http\Controllers\ContactPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
@@ -92,7 +94,7 @@ Route::post('/cart/abandon', [LeadController::class, 'trackAbandonedCart'])->nam
 // ── Static pages ───────────────────────────────────────────────────────────
 Route::view('/about', 'about')->name('about');
 Route::view('/quiz', 'quiz')->name('quiz');
-Route::view('/contact', 'contact')->name('contact');
+Route::get('/contact', ContactPageController::class)->name('contact');
 
 // ── Authenticated routes ───────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
@@ -139,6 +141,10 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
+        Route::get('/lang/{locale}', [Admin\AdminLanguageController::class, 'switch'])
+            ->name('locale.switch')
+            ->where('locale', 'en|ar');
+
         // Dashboard
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
@@ -148,6 +154,9 @@ Route::middleware(['auth', 'admin'])
         Route::resource('product-categories', Admin\ProductCategoryController::class)->except(['show']);
         Route::resource('shop-quick-filters', Admin\ShopQuickFilterController::class)->except(['show']);
         Route::resource('shipping-cities', Admin\ShippingCityController::class)->except(['show']);
+
+        Route::get('contact-settings/edit', [Admin\ContactSettingController::class, 'edit'])->name('contact-settings.edit');
+        Route::put('contact-settings', [Admin\ContactSettingController::class, 'update'])->name('contact-settings.update');
         Route::post('products/{product}/images', [Admin\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('products/{product}/images/{index}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
 
@@ -181,7 +190,4 @@ Route::middleware(['auth', 'admin'])
         // Skin quiz submissions
         Route::get('quiz-responses', [Admin\QuizResponseController::class, 'index'])->name('quiz-responses.index');
         Route::get('quiz-responses/{quiz_session}', [Admin\QuizResponseController::class, 'show'])->name('quiz-responses.show');
-
-        // Pages / CMS
-        Route::resource('pages', Admin\PageController::class)->except(['show']);
     });

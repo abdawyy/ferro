@@ -1,17 +1,17 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Dashboard')
-@section('page_title', 'Dashboard')
+@section('title', __('admin.dashboard.title'))
+@section('page_title', __('admin.dashboard.title'))
 
 @section('content')
 
 {{-- KPI Stats Grid --}}
 <div class="grid-4" style="margin-bottom: 24px;">
     @foreach([
-        ['label' => 'Total Revenue',    'value' => '$' . number_format($stats['revenue'], 2),    'icon' => '💰', 'bg' => 'rgba(232,80,10,0.1)',  'sub' => 'Paid orders'],
-        ['label' => 'Total Orders',     'value' => $stats['total_orders'],                        'icon' => '📦', 'bg' => 'rgba(59,130,246,0.1)', 'sub' => $stats['pending_orders'] . ' pending'],
-        ['label' => 'Customers',        'value' => $stats['total_customers'],                     'icon' => '👥', 'bg' => 'rgba(34,197,94,0.1)',  'sub' => $stats['blocked_users'] . ' blocked'],
-        ['label' => 'Leads / Waitlist', 'value' => $stats['total_leads'],                         'icon' => '📋', 'bg' => 'rgba(234,179,8,0.1)',  'sub' => $stats['waitlist_total'] . ' on waitlist'],
+        ['label' => __('admin.dashboard.total_revenue'),    'value' => ferro_money($stats['revenue'], 'EGP'),    'icon' => '💰', 'bg' => 'rgba(232,80,10,0.1)',  'sub' => __('admin.dashboard.paid_orders_sub')],
+        ['label' => __('admin.dashboard.total_orders'),     'value' => $stats['total_orders'],                        'icon' => '📦', 'bg' => 'rgba(59,130,246,0.1)', 'sub' => __('admin.dashboard.pending_suffix', ['count' => $stats['pending_orders']])],
+        ['label' => __('admin.dashboard.customers'),        'value' => $stats['total_customers'],                     'icon' => '👥', 'bg' => 'rgba(34,197,94,0.1)',  'sub' => __('admin.dashboard.blocked_suffix', ['count' => $stats['blocked_users']])],
+        ['label' => __('admin.dashboard.leads_waitlist'), 'value' => $stats['total_leads'],                         'icon' => '📋', 'bg' => 'rgba(234,179,8,0.1)',  'sub' => __('admin.dashboard.waitlist_suffix', ['count' => $stats['waitlist_total']])],
     ] as $stat)
     <div class="stat-card">
         <div class="stat-icon" style="background: {{ $stat['bg'] }};">{{ $stat['icon'] }}</div>
@@ -29,12 +29,12 @@
 <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
     @if($stats['low_stock'] > 0)
     <a href="{{ route('admin.products.index', ['status' => 'active']) }}" class="flash flash-warning" style="text-decoration: none; margin: 0; flex: 1; min-width: 200px;">
-        ⚠️ <strong>{{ $stats['low_stock'] }}</strong> product(s) are low on stock or out of stock
+        ⚠️ {!! __('admin.dashboard.low_stock_alert', ['count' => $stats['low_stock']]) !!}
     </a>
     @endif
     @if($stats['pending_orders'] > 0)
     <a href="{{ route('admin.orders.index', ['status' => 'pending_payment']) }}" class="flash flash-error" style="text-decoration: none; margin: 0; flex: 1; min-width: 200px;">
-        🔴 <strong>{{ $stats['pending_orders'] }}</strong> order(s) awaiting payment confirmation
+        🔴 {!! __('admin.dashboard.pending_pay_alert', ['count' => $stats['pending_orders']]) !!}
     </a>
     @endif
 </div>
@@ -45,18 +45,18 @@
     {{-- Recent Orders --}}
     <div class="admin-card">
         <div class="admin-card-header">
-            <h2 class="admin-card-title">Recent Orders</h2>
-            <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">View all</a>
+            <h2 class="admin-card-title">{{ __('admin.dashboard.recent_orders') }}</h2>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">{{ __('admin.dashboard.view_all') }}</a>
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Order</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Date</th>
+                        <th>{{ __('admin.dashboard.th_order') }}</th>
+                        <th>{{ __('admin.dashboard.th_customer') }}</th>
+                        <th>{{ __('admin.dashboard.th_total') }}</th>
+                        <th>{{ __('admin.dashboard.th_status') }}</th>
+                        <th>{{ __('admin.dashboard.th_date') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,8 +67,8 @@
                                 #{{ $order->order_number }}
                             </a>
                         </td>
-                        <td>{{ $order->user?->name ?? 'Guest' }}</td>
-                        <td class="mono">${{ number_format($order->total, 2) }}</td>
+                        <td>{{ $order->user?->name ?? __('admin.dashboard.guest') }}</td>
+                        <td class="mono">{{ ferro_money($order->total, $order->currency) }}</td>
                         <td>
                             @php
                                 $badgeMap = ['delivered'=>'badge-success','shipped'=>'badge-info','confirmed'=>'badge-success','processing'=>'badge-warning','pending_payment'=>'badge-warning','cancelled'=>'badge-danger','refunded'=>'badge-neutral'];
@@ -80,7 +80,7 @@
                         <td class="text-muted text-sm">{{ $order->created_at->format('d M y') }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-muted" style="text-align:center; padding: 24px;">No orders yet.</td></tr>
+                    <tr><td colspan="5" class="text-muted" style="text-align:center; padding: 24px;">{{ __('admin.dashboard.no_orders') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -90,17 +90,17 @@
     {{-- Low Stock Products --}}
     <div class="admin-card">
         <div class="admin-card-header">
-            <h2 class="admin-card-title">⚠️ Low Stock</h2>
-            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary btn-sm">All products</a>
+            <h2 class="admin-card-title">⚠️ {{ __('admin.dashboard.low_stock') }}</h2>
+            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary btn-sm">{{ __('admin.dashboard.all_products') }}</a>
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>SKU</th>
-                        <th style="text-align:center;">Stock</th>
-                        <th>Action</th>
+                        <th>{{ __('admin.dashboard.th_product') }}</th>
+                        <th>{{ __('admin.dashboard.th_sku') }}</th>
+                        <th style="text-align:center;">{{ __('admin.dashboard.th_stock') }}</th>
+                        <th>{{ __('admin.dashboard.th_action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,11 +114,11 @@
                             </span>
                         </td>
                         <td>
-                            <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary btn-xs">Edit</a>
+                            <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary btn-xs">{{ __('admin.dashboard.edit') }}</a>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="text-muted" style="text-align:center; padding: 24px;">All products well stocked 🎉</td></tr>
+                    <tr><td colspan="4" class="text-muted" style="text-align:center; padding: 24px;">{{ __('admin.dashboard.well_stocked') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -130,21 +130,21 @@
 {{-- Recent Leads --}}
 <div class="admin-card" style="margin-top: 24px;">
     <div class="admin-card-header">
-        <h2 class="admin-card-title">Recent Leads</h2>
+        <h2 class="admin-card-title">{{ __('admin.dashboard.recent_leads') }}</h2>
         <div style="display: flex; gap: 8px;">
-            <a href="{{ route('admin.leads.export') }}" class="btn btn-secondary btn-sm">↓ Export CSV</a>
-            <a href="{{ route('admin.leads.index') }}" class="btn btn-secondary btn-sm">View all</a>
+            <a href="{{ route('admin.leads.export') }}" class="btn btn-secondary btn-sm">{{ __('admin.dashboard.export_csv') }}</a>
+            <a href="{{ route('admin.leads.index') }}" class="btn btn-secondary btn-sm">{{ __('admin.dashboard.view_all') }}</a>
         </div>
     </div>
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Email</th>
-                    <th>Source</th>
-                    <th>Priority</th>
-                    <th>Waitlist</th>
-                    <th>Joined</th>
+                    <th>{{ __('admin.dashboard.th_email') }}</th>
+                    <th>{{ __('admin.dashboard.th_source') }}</th>
+                    <th>{{ __('admin.dashboard.th_priority') }}</th>
+                    <th>{{ __('admin.dashboard.th_waitlist') }}</th>
+                    <th>{{ __('admin.dashboard.th_joined') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,7 +160,7 @@
                     <td class="text-muted text-sm">{{ $lead->created_at->diffForHumans() }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-muted" style="text-align:center; padding: 24px;">No leads yet.</td></tr>
+                <tr><td colspan="5" class="text-muted" style="text-align:center; padding: 24px;">{{ __('admin.dashboard.no_leads') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

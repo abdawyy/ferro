@@ -114,7 +114,7 @@
             <p style="margin-top:8px;">
                 <a href="{{ url('/') }}">{{ url('/') }}</a>
                 &nbsp;·&nbsp;
-                <a href="mailto:support@ferro.com">support@ferro.com</a>
+                <a href="mailto:{{ $contactSetting->support_email }}">{{ $contactSetting->support_email }}</a>
             </p>
             <p style="margin-top:12px;">
                 © {{ date('Y') }} FERRO.

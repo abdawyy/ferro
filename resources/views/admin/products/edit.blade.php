@@ -253,7 +253,7 @@
             <div class="admin-card-body">
                 <div class="grid-3">
                     <div class="form-group">
-                        <label class="form-label" for="price">Sale Price (USD) *</label>
+                        <label class="form-label" for="price">Sale Price (LE) *</label>
                         <input id="price" name="price" type="number" step="0.01" min="0" required
                                class="form-input mono" value="{{ old('price', $product->price ?? '') }}">
                     </div>

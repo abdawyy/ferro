@@ -115,13 +115,13 @@
                                 <p class="text-ferro-white font-semibold">{{ $item->product_name }}</p>
                                 <p class="text-ferro-ash text-xs mt-0.5">{{ $isAr ? 'الكمية:' : 'Qty:' }} {{ $item->quantity }}</p>
                                 <p class="text-ferro-silver text-body-sm mt-2">
-                                    {{ $item->currency === 'USD' ? '$' : $item->currency }}{{ number_format($item->unit_price, 2) }}
+                                    {{ ferro_money($item->unit_price, $item->currency ?? $order->currency) }}
                                     {{ $isAr ? 'للقطعة' : 'each' }}
                                 </p>
                             </div>
                             <div class="text-right {{ $isAr ? 'text-left' : '' }}">
                                 <p class="text-ferro-white font-semibold">
-                                    {{ $item->currency === 'USD' ? '$' : $item->currency }}{{ number_format($item->unit_price * $item->quantity, 2) }}
+                                    {{ ferro_money($item->unit_price * $item->quantity, $item->currency ?? $order->currency) }}
                                 </p>
                             </div>
                         </div>
@@ -140,29 +140,29 @@
                     <div class="space-y-2 text-body-sm {{ $isAr ? 'text-right' : '' }}">
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'المجموع الفرعي' : 'Subtotal' }}</span>
-                            <span class="text-ferro-white">{{ $order->currency === 'USD' ? '$' : $order->currency }}{{ number_format($order->subtotal, 2) }}</span>
+                            <span class="text-ferro-white">{{ ferro_money($order->subtotal, $order->currency) }}</span>
                         </div>
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الشحن' : 'Shipping' }}</span>
                             <span class="text-ferro-white">
-                                {{ $order->shipping_cost > 0
-                                    ? ($order->currency === 'USD' ? '$' : $order->currency) . number_format($order->shipping_cost, 2)
+                                {{ (float) $order->shipping_amount > 0
+                                    ? ferro_money($order->shipping_amount, $order->currency)
                                     : ($isAr ? 'مجاني' : 'Free') }}
                             </span>
                         </div>
                         <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-silver">{{ $isAr ? 'الضريبة' : 'Tax' }}</span>
-                            <span class="text-ferro-white">{{ $order->currency === 'USD' ? '$' : $order->currency }}{{ number_format($order->tax_amount, 2) }}</span>
+                            <span class="text-ferro-white">{{ ferro_money($order->tax_amount, $order->currency) }}</span>
                         </div>
                         @if($order->discount_amount > 0)
                             <div class="flex justify-between {{ $isAr ? 'flex-row-reverse' : '' }}">
                                 <span class="text-green-400">{{ $isAr ? 'الخصم' : 'Discount' }}</span>
-                                <span class="text-green-400">−{{ $order->currency === 'USD' ? '$' : $order->currency }}{{ number_format($order->discount_amount, 2) }}</span>
+                                <span class="text-green-400">−{{ ferro_money($order->discount_amount, $order->currency) }}</span>
                             </div>
                         @endif
                         <div class="flex justify-between font-semibold text-base pt-3 border-t border-ferro-carbon {{ $isAr ? 'flex-row-reverse' : '' }}">
                             <span class="text-ferro-white">{{ $isAr ? 'الإجمالي' : 'Total' }}</span>
-                            <span class="text-ferro-orange">{{ $order->currency === 'USD' ? '$' : $order->currency }}{{ number_format($order->grand_total, 2) }}</span>
+                            <span class="text-ferro-orange">{{ ferro_money($order->total, $order->currency) }}</span>
                         </div>
                     </div>
                 </div>

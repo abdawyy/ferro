@@ -196,11 +196,11 @@
                         </span>
                     @else
                         <span class="font-display text-3xl text-ferro-white" itemprop="price" content="{{ $product->price }}">
-                            {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format($product->price, 2) }}
+                            {{ ferro_money($product->price, $product->currency) }}
                         </span>
                         @if($product->is_on_sale)
                             <span class="text-ferro-ash text-xl line-through">
-                                {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format($product->compare_price, 2) }}
+                                {{ ferro_money($product->compare_price, $product->currency) }}
                             </span>
                             <span class="badge-coming-soon">
                                 {{ $isAr ? 'وفّر' : 'Save' }} {{ $product->discount_percent }}%

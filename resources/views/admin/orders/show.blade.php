@@ -8,7 +8,7 @@
 
 <div class="page-header">
     <div style="display:flex; align-items:center; gap: 14px;">
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">← Back</a>
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">{{ __('admin.orders.back') }}</a>
         <h1>#{{ $order->order_number }}</h1>
         @php
             $sb = ['delivered'=>'badge-success','shipped'=>'badge-info','confirmed'=>'badge-success','processing'=>'badge-warning','pending_payment'=>'badge-warning','cancelled'=>'badge-danger','refunded'=>'badge-neutral'][$order->status] ?? 'badge-neutral';
@@ -18,7 +18,7 @@
         </span>
     </div>
     <div style="display: flex; gap: 8px;">
-        <a href="{{ route('admin.orders.invoice', $order) }}" class="btn btn-secondary">↓ Invoice PDF</a>
+        <a href="{{ route('admin.orders.invoice', $order) }}" class="btn btn-secondary">{{ __('admin.orders.invoice_pdf') }}</a>
     </div>
 </div>
 
@@ -29,15 +29,15 @@
 
         {{-- Order Items --}}
         <div class="admin-card">
-            <div class="admin-card-header"><h2 class="admin-card-title">Items ({{ $order->items->sum('quantity') }})</h2></div>
+            <div class="admin-card-header"><h2 class="admin-card-title">{{ __('admin.orders.items_title', ['count' => $order->items->sum('quantity')]) }}</h2></div>
             <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th style="text-align:center;">Qty</th>
-                        <th style="text-align:right;">Unit</th>
-                        <th style="text-align:right;">Line Total</th>
+                        <th>{{ __('admin.orders.th_product') }}</th>
+                        <th style="text-align:center;">{{ __('admin.orders.th_qty') }}</th>
+                        <th style="text-align:right;">{{ __('admin.orders.th_unit') }}</th>
+                        <th style="text-align:right;">{{ __('admin.orders.th_line_total') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,16 +48,16 @@
                             @if($item->variant)<div class="text-muted text-sm">{{ $item->variant }}</div>@endif
                         </td>
                         <td style="text-align:center;">{{ $item->quantity }}</td>
-                        <td style="text-align:right;" class="mono">${{ number_format($item->unit_price, 2) }}</td>
-                        <td style="text-align:right;" class="mono">${{ number_format($item->unit_price * $item->quantity, 2) }}</td>
+                        <td style="text-align:right;" class="mono">{{ ferro_money($item->unit_price, $order->currency) }}</td>
+                        <td style="text-align:right;" class="mono">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     @foreach([
-                        ['Subtotal', '$' . number_format($order->subtotal, 2)],
-                        ['Shipping', $order->shipping_amount > 0 ? '$' . number_format($order->shipping_amount, 2) : 'Free'],
-                        ['Tax',      '$' . number_format($order->tax_amount, 2)],
+                        [__('admin.orders.subtotal'), ferro_money($order->subtotal, $order->currency)],
+                        [__('admin.orders.shipping'), $order->shipping_amount > 0 ? ferro_money($order->shipping_amount, $order->currency) : __('admin.orders.free')],
+                        [__('admin.orders.tax'),      ferro_money($order->tax_amount, $order->currency)],
                     ] as [$label, $val])
                     <tr>
                         <td colspan="3" style="text-align:right; color: var(--admin-muted); font-size:12px; padding: 6px 14px;">{{ $label }}</td>
@@ -66,13 +66,13 @@
                     @endforeach
                     @if($order->discount_amount > 0)
                     <tr>
-                        <td colspan="3" style="text-align:right; color: var(--admin-green); font-size:12px; padding: 6px 14px;">Discount @if($order->coupon_code)({{ $order->coupon_code }})@endif</td>
-                        <td style="text-align:right; padding: 6px 14px;" class="mono" style="color:var(--admin-green);">-${{ number_format($order->discount_amount, 2) }}</td>
+                        <td colspan="3" style="text-align:right; color: var(--admin-green); font-size:12px; padding: 6px 14px;">{{ __('admin.orders.discount') }} @if($order->coupon_code)({{ $order->coupon_code }})@endif</td>
+                        <td style="text-align:right; padding: 6px 14px; color:var(--admin-green);" class="mono">−{{ ferro_money($order->discount_amount, $order->currency) }}</td>
                     </tr>
                     @endif
                     <tr style="background: rgba(232,80,10,0.06); border-top: 1px solid var(--admin-border);">
-                        <td colspan="3" style="text-align:right; font-weight:700; padding: 10px 14px;">GRAND TOTAL</td>
-                        <td style="text-align:right; padding:10px 14px; font-weight:700; color: var(--admin-orange);" class="mono">${{ number_format($order->total, 2) }}</td>
+                        <td colspan="3" style="text-align:right; font-weight:700; padding: 10px 14px;">{{ __('admin.orders.grand_total') }}</td>
+                        <td style="text-align:right; padding:10px 14px; font-weight:700; color: var(--admin-orange);" class="mono">{{ ferro_money($order->total, $order->currency) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -81,7 +81,7 @@
 
         {{-- Customer & Shipping --}}
         <div class="admin-card">
-            <div class="admin-card-header"><h2 class="admin-card-title">Customer & Shipping</h2></div>
+            <div class="admin-card-header"><h2 class="admin-card-title">{{ __('admin.orders.customer_shipping') }}</h2></div>
             <div class="admin-card-body">
                 @php
                     $bill = $order->billing_address ?? [];
@@ -92,7 +92,7 @@
 
                 @if(!$order->user && ($guestName !== '' || $guestEmail))
                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--admin-border);">
-                    <div class="form-label" style="margin-bottom: 6px;">Guest checkout</div>
+                    <div class="form-label" style="margin-bottom: 6px;">{{ __('admin.orders.guest_checkout') }}</div>
                     <div style="font-weight: 600;">{{ $guestName !== '' ? $guestName : '—' }}</div>
                     @if($guestEmail)<div class="text-muted text-sm">{{ $guestEmail }}</div>@endif
                     @if($guestPhone)<div class="text-muted text-sm">📞 {{ $guestPhone }}</div>@endif

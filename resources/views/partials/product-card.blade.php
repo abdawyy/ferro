@@ -132,11 +132,11 @@
                 @else
                     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span class="text-ferro-white font-semibold text-base tabular-nums" itemprop="price" content="{{ number_format((float) $product->price, 2, '.', '') }}">
-                            {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format((float) $product->price, 2) }}
+                            {{ ferro_money($product->price, $product->currency) }}
                         </span>
                         @if($product->is_on_sale)
                             <span class="text-ferro-ash text-sm line-through tabular-nums">
-                                {{ $product->currency === 'USD' ? '$' : $product->currency }}{{ number_format((float) $product->compare_price, 2) }}
+                                {{ ferro_money($product->compare_price, $product->currency) }}
                             </span>
                         @endif
                     </div>

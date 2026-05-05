@@ -155,7 +155,6 @@ class InvoiceService
         return [
             'order'                => $order,
             'items'                => $order->items,
-            'currencySymbol'       => $this->currencySymbol($order),
             'brandTagline'         => 'Forged from Iron — Polished by Luxury',
             'invoiceLabel'         => 'INVOICE',
             'billingLabel'         => 'BILL TO',
@@ -175,16 +174,6 @@ class InvoiceService
             'paymentMethodDisplay' => $this->paymentMethodLabel($order->payment_method),
             'paymentStatusDisplay' => $this->paymentStatusLabel($order->payment_status),
         ];
-    }
-
-    private function currencySymbol(Order $order): string
-    {
-        return match ($order->currency) {
-            'USD' => '$',
-            'AED' => 'AED',
-            'EGP' => 'E£',
-            default => (string) $order->currency,
-        };
     }
 
     private function paymentMethodLabel(?string $method): string

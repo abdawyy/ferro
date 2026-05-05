@@ -272,9 +272,10 @@ function ferroCheckout(prefill, cityRates, isAr) {
         formatMoney(amount) {
             const n = Number(amount) || 0;
             const cur = this.moneyCurrency();
-            if (cur === 'USD') return '$' + n.toFixed(2);
-            if (cur === 'EGP') return 'E£' + n.toFixed(2);
-            return cur + ' ' + n.toFixed(2);
+            const u = String(cur).toUpperCase();
+            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' LE';
+            if (u === 'AED') return n.toFixed(2) + ' AED';
+            return n.toFixed(2) + ' ' + u;
         },
 
         selectedCity() {

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\ContactSetting;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +27,12 @@ class AppServiceProvider extends ServiceProvider
         Route::bind('product', function (string $value) {
             return Product::withTrashed()->whereKey($value)->firstOrFail();
         });
+
+        View::composer(
+            ['layouts.app', 'contact', 'partials.footer', 'partials.social-follow-links', 'emails._layout', 'pdf.invoice'],
+            function ($view): void {
+                $view->with('contactSetting', ContactSetting::current());
+            }
+        );
     }
 }

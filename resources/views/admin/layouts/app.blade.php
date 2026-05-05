@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+@php($adminLocale = app()->getLocale())
+<html lang="{{ str_replace('_', '-', $adminLocale) }}" dir="{{ $adminLocale === 'ar' ? 'rtl' : 'ltr' }}" class="{{ $adminLocale === 'ar' ? 'admin-locale-ar' : 'admin-locale-en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="ferro-app-url" content="{{ url('/') }}">
     <meta name="ferro-cart-add-url" content="{{ route('api.cart.add') }}">
-    <title>@yield('title', 'Admin') — FERRO Admin</title>
+    <title>@yield('title', __('admin.dashboard.title')) — FERRO Admin</title>
 
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -40,6 +41,46 @@
             color: var(--admin-text);
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        .admin-locale-ar body {
+            font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+        }
+
+        /* RTL layout */
+        html[dir="rtl"] .admin-sidebar {
+            left: auto;
+            right: 0;
+            border-right: none;
+            border-left: 1px solid var(--admin-border);
+        }
+        html[dir="rtl"] .admin-main {
+            margin-left: 0;
+            margin-right: var(--sidebar-w);
+        }
+        html[dir="rtl"] .sidebar-link.active {
+            border-left: none;
+            border-right: 2px solid var(--admin-orange);
+            padding-left: 16px;
+            padding-right: 14px;
+        }
+        html[dir="rtl"] .sidebar-badge {
+            margin-left: 0;
+            margin-right: auto;
+        }
+        @media (max-width: 768px) {
+            html[dir="rtl"] .admin-sidebar {
+                transform: translateX(100%);
+            }
+            html[dir="rtl"] .admin-wrap.nav-open .admin-sidebar {
+                transform: translateX(0);
+            }
+            html[dir="ltr"] .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            html[dir="ltr"] .admin-wrap.nav-open .admin-sidebar {
+                transform: translateX(0);
+            }
         }
 
         /* ── Layout ── */
@@ -200,8 +241,8 @@
         }
         @media (max-width: 768px) {
             .admin-nav-toggle { display: inline-flex; }
-            .admin-sidebar { transform: translateX(-100%); }
-            .admin-main    { margin-left: 0; }
+            html[dir="ltr"] .admin-main,
+            html[dir="rtl"] .admin-main { margin-left: 0; margin-right: 0; }
             .admin-content { padding: 16px 14px; }
             .admin-topbar  { padding: 10px 12px; }
             .topbar-actions { gap: 8px; }
@@ -487,7 +528,7 @@
                     @click="navOpen = ! navOpen"
                     :aria-expanded="navOpen"
                     aria-controls="admin-sidebar"
-                    :aria-label="navOpen ? 'Close menu' : 'Open menu'"
+                    :aria-label="navOpen ? @js(__('admin.layout.menu_close')) : @js(__('admin.layout.menu_open'))"
                 >
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -501,9 +542,15 @@
                 </div>
             </div>
             <div class="topbar-actions">
+                <div class="flex items-center gap-1 border border-[var(--admin-border)] rounded overflow-hidden" role="group" aria-label="Admin language">
+                    <a href="{{ route('admin.locale.switch', 'en') }}"
+                       class="px-2.5 py-1.5 text-[11px] font-semibold no-underline {{ $adminLocale === 'en' ? 'bg-[var(--admin-orange)] text-white' : 'text-[var(--admin-muted)] hover:text-white' }}">{{ __('admin.layout.lang_en') }}</a>
+                    <a href="{{ route('admin.locale.switch', 'ar') }}"
+                       class="px-2.5 py-1.5 text-[11px] font-semibold no-underline {{ $adminLocale === 'ar' ? 'bg-[var(--admin-orange)] text-white' : 'text-[var(--admin-muted)] hover:text-white' }}">{{ __('admin.layout.lang_ar') }}</a>
+                </div>
                 <a href="{{ route('home') }}" class="btn btn-secondary btn-sm" target="_blank" style="gap:5px;">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    View Store
+                    {{ __('admin.layout.view_store') }}
                 </a>
                 <div class="topbar-user">
                     <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</div>
@@ -511,7 +558,7 @@
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-secondary btn-sm">Sign out</button>
+                    <button type="submit" class="btn btn-secondary btn-sm">{{ __('admin.layout.sign_out') }}</button>
                 </form>
             </div>
         </header>

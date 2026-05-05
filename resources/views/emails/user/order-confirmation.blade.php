@@ -76,16 +76,16 @@
                 @endif
             </td>
             <td style="text-align: center;">{{ $item->quantity }}</td>
-            <td style="text-align: right;">${{ number_format($item->unit_price, 2) }}</td>
-            <td style="text-align: right; font-weight: 600;">${{ number_format($item->unit_price * $item->quantity, 2) }}</td>
+            <td style="text-align: right;">{{ ferro_money($item->unit_price, $order->currency) }}</td>
+            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot>
         @foreach([
-            ['label' => $t['subtotal'], 'value' => '$' . number_format($order->subtotal, 2),      'class' => ''],
-            ['label' => $t['shipping'], 'value' => $order->shipping_cost > 0 ? '$' . number_format($order->shipping_cost, 2) : ($isRtl ? 'مجاني' : 'Free'), 'class' => ''],
-            ['label' => $t['tax'],      'value' => '$' . number_format($order->tax_amount, 2),    'class' => ''],
+            ['label' => $t['subtotal'], 'value' => ferro_money($order->subtotal, $order->currency),      'class' => ''],
+            ['label' => $t['shipping'], 'value' => (float) $order->shipping_amount > 0 ? ferro_money($order->shipping_amount, $order->currency) : ($isRtl ? 'مجاني' : 'Free'), 'class' => ''],
+            ['label' => $t['tax'],      'value' => ferro_money($order->tax_amount, $order->currency),    'class' => ''],
         ] as $row)
         @if(!empty($row['value']))
         <tr>
@@ -97,12 +97,12 @@
         @if($order->discount_amount > 0)
         <tr>
             <td colspan="3" style="text-align: right; color: #22C55E; font-size: 12px; padding: 5px 14px;">{{ $t['discount'] }}</td>
-            <td style="text-align: right; padding: 5px 14px; color: #22C55E;">-${{ number_format($order->discount_amount, 2) }}</td>
+            <td style="text-align: right; padding: 5px 14px; color: #22C55E;">−{{ ferro_money($order->discount_amount, $order->currency) }}</td>
         </tr>
         @endif
         <tr class="total-row">
             <td colspan="3" style="text-align: right; padding: 12px 14px; font-size: 13px;">{{ $t['grand_total'] }}</td>
-            <td style="text-align: right; padding: 12px 14px;" class="grand-total">${{ number_format($order->grand_total, 2) }}</td>
+            <td style="text-align: right; padding: 12px 14px;" class="grand-total">{{ ferro_money($order->total, $order->currency) }}</td>
         </tr>
     </tfoot>
 </table>

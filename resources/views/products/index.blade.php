@@ -31,6 +31,10 @@
         from { transform: translateX(-105%); }
         to { transform: translateX(320%); }
     }
+    /* Wrapped filter chips (no nested horizontal scroll): avoids iOS Safari sticky + overflow-x bugs. */
+    #ferro-shop .shop-filter-chips a.shop-filter-nav {
+        touch-action: manipulation;
+    }
 </style>
 @endpush
 
@@ -70,15 +74,15 @@
 </section>
 
 {{-- ── Filter Bar (categories + quick filters from admin; AJAX on this page) ─ --}}
-<section class="sticky top-[72px] z-40 bg-ferro-black/95 backdrop-blur-xl border-b border-ferro-carbon/60 relative"
+<section class="sticky top-[72px] z-40 border-b border-ferro-carbon/60 relative bg-ferro-black md:bg-ferro-black/95 md:backdrop-blur-xl supports-[backdrop-filter]:md:bg-ferro-black/90"
          id="ferro-shop"
          data-shop-catalog-url="{{ route('api.shop.catalog') }}"
          data-shop-path="{{ parse_url(route('products.index'), PHP_URL_PATH) }}">
     <div id="shop-catalog-progress-track" class="pointer-events-none absolute bottom-0 left-0 right-0 z-[60] h-[3px] overflow-hidden bg-ferro-carbon/40" aria-hidden="true">
         <div id="shop-catalog-progress-bar" class="h-full rounded-full bg-gradient-to-r from-ferro-orange/30 via-ferro-orange to-ferro-orange/30 shadow-[0_0_14px_rgba(232,80,10,0.45)]"></div>
     </div>
-    <div class="container-ferro">
-        <div class="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide md:flex-wrap md:overflow-x-visible md:gap-y-2 touch-pan-x">
+    <div class="container-ferro py-3 md:py-4">
+        <nav class="shop-filter-chips flex flex-wrap items-center gap-2 gap-y-2.5" aria-label="{{ $isAr ? 'تصفية المنتجات' : 'Filter products' }}">
 
             <a href="{{ route('products.index', array_filter(request()->only('q'))) }}"
                class="filter-pill shop-filter-nav flex-shrink-0 {{ $active === '' && $status === '' ? 'active' : '' }}"
@@ -95,8 +99,7 @@
             @endforeach
 
             @if($shopQuickFilters->isNotEmpty())
-                <span class="w-px h-5 bg-ferro-carbon/80 mx-1 flex-shrink-0 max-md:hidden md:inline-block" aria-hidden="true"></span>
-                <span class="w-full h-px bg-ferro-carbon/80 my-1 md:hidden flex-shrink-0 basis-full" aria-hidden="true"></span>
+                <span class="w-px h-5 bg-ferro-carbon/80 mx-1 flex-shrink-0 self-center" aria-hidden="true"></span>
 
                 @foreach($shopQuickFilters as $qf)
                     <a href="{{ route('products.index', array_filter(array_merge(request()->except('status', 'page'), ['status' => $qf->product_status]))) }}"
@@ -106,7 +109,7 @@
                     </a>
                 @endforeach
             @endif
-        </div>
+        </nav>
     </div>
 </section>
 
@@ -125,12 +128,12 @@
             $promises = $isAr ? [
                 ['icon' => 'leaf',    'title' => 'طبيعي 100%',         'desc'  => 'مكوّنات نقية من الطبيعة'],
                 ['icon' => 'shield',  'title' => 'خالٍ من المواد الضارة','desc' => 'بدون بارابين أو كبريتات'],
-                ['icon' => 'truck',   'title' => 'شحن سريع',            'desc'  => 'توصيل مجاني فوق 150$'],
+                ['icon' => 'truck',   'title' => 'شحن سريع',            'desc'  => 'توصيل مجاني فوق 150 LE'],
                 ['icon' => 'refresh', 'title' => 'إرجاع مضمون',         'desc'  => '30 يوم ضمان استرداد'],
             ] : [
                 ['icon' => 'leaf',    'title' => '100% Natural',        'desc'  => 'Pure ingredients, no compromise'],
                 ['icon' => 'shield',  'title' => 'Clean Formula',       'desc'  => 'Free from parabens & sulfates'],
-                ['icon' => 'truck',   'title' => 'Fast Shipping',       'desc'  => 'Free delivery over $150'],
+                ['icon' => 'truck',   'title' => 'Fast Shipping',       'desc'  => 'Free delivery over 150 LE'],
                 ['icon' => 'refresh', 'title' => '30-Day Returns',      'desc'  => 'Shop with confidence'],
             ];
             @endphp
@@ -221,7 +224,7 @@
         if (totalEl) totalEl.textContent = String(n);
     }
 
-    function loadCatalog(search, push) {
+    function loadCatalog(search, push, fallbackFullUrl) {
         const qs = search.startsWith('?') ? search.slice(1) : search;
         const url = qs ? catalogUrl + '?' + qs : catalogUrl;
         if (inflight) inflight.abort();
@@ -247,7 +250,10 @@
                     history.pushState({ shop: true }, '', qs ? path + '?' + qs : path);
                 }
             })
-            .catch(() => {})
+            .catch((err) => {
+                if (err && err.name === 'AbortError') return;
+                if (fallbackFullUrl) window.location.href = fallbackFullUrl;
+            })
             .finally(() => {
                 if (gen !== loadGeneration) return;
                 mount.removeAttribute('aria-busy');
@@ -261,7 +267,7 @@
         e.preventDefault();
         const u = new URL(a.href, window.location.origin);
         if (!shopListPath(u.pathname)) return;
-        loadCatalog(u.search, true);
+        loadCatalog(u.search, true, a.href);
     });
 
     mount.addEventListener('click', (e) => {
@@ -270,7 +276,7 @@
             e.preventDefault();
             const u = new URL(filter.href, window.location.origin);
             if (!shopListPath(u.pathname)) return;
-            loadCatalog(u.search, true);
+            loadCatalog(u.search, true, filter.href);
             return;
         }
         const a = e.target.closest('a.shop-ajax-nav');
@@ -278,13 +284,13 @@
         e.preventDefault();
         const u = new URL(a.href, window.location.origin);
         if (!shopListPath(u.pathname)) return;
-        loadCatalog(u.search, true);
+        loadCatalog(u.search, true, a.href);
         const grid = mount.querySelector('.shop-product-grid');
         if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     window.addEventListener('popstate', () => {
-        loadCatalog(window.location.search, false);
+        loadCatalog(window.location.search, false, null);
     });
 })();
 </script>

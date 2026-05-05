@@ -95,31 +95,31 @@
                     @endforeach
                 @endif
             </td>
-            <td class="num">{{ $currencySymbol }}{{ number_format((float) $item->unit_price, 2) }}</td>
+            <td class="num">{{ \App\Support\Money::format($item->unit_price, $order->currency) }}</td>
             <td class="num">{{ $item->quantity }}</td>
-            <td class="num">{{ (float) $item->discount_amount > 0 ? '−' . $currencySymbol . number_format((float) $item->discount_amount, 2) : '—' }}</td>
-            <td class="num"><strong>{{ $currencySymbol }}{{ number_format((float) $item->line_total, 2) }}</strong></td>
+            <td class="num">{{ (float) $item->discount_amount > 0 ? '−' . \App\Support\Money::format($item->discount_amount, $order->currency) : '—' }}</td>
+            <td class="num"><strong>{{ \App\Support\Money::format($item->line_total, $order->currency) }}</strong></td>
         </tr>
         @endforeach
     </tbody>
 </table>
 
 <table class="totals" cellspacing="0" cellpadding="0">
-    <tr><td class="muted">{{ $subtotalLabel }}</td><td align="right" style="font-weight:bold;">{{ $currencySymbol }}{{ number_format((float) $order->subtotal, 2) }}</td></tr>
+    <tr><td class="muted">{{ $subtotalLabel }}</td><td align="right" style="font-weight:bold;">{{ \App\Support\Money::format($order->subtotal, $order->currency) }}</td></tr>
     @if((float) $order->discount_amount > 0)
-    <tr><td class="muted">{{ $discountLabel }}</td><td align="right" class="orange">−{{ $currencySymbol }}{{ number_format((float) $order->discount_amount, 2) }}</td></tr>
+    <tr><td class="muted">{{ $discountLabel }}</td><td align="right" class="orange">−{{ \App\Support\Money::format($order->discount_amount, $order->currency) }}</td></tr>
     @endif
     <tr>
         <td class="muted">{{ $shippingLabel2 }}</td>
-        <td align="right" style="font-weight:bold;">{{ (float) $order->shipping_amount > 0 ? $currencySymbol . number_format((float) $order->shipping_amount, 2) : 'Free' }}</td>
+        <td align="right" style="font-weight:bold;">{{ (float) $order->shipping_amount > 0 ? \App\Support\Money::format($order->shipping_amount, $order->currency) : 'Free' }}</td>
     </tr>
-    <tr><td class="muted">{{ $taxLabel }} ({{ number_format((float) $order->tax_rate * 100, 0) }}%)</td><td align="right" style="font-weight:bold;">{{ $currencySymbol }}{{ number_format((float) $order->tax_amount, 2) }}</td></tr>
-    <tr style="border-top:2px solid #E8500A;"><td style="font-size:13px;font-weight:bold;padding-top:8px;">{{ $totalLabel }}</td><td align="right" style="font-size:13px;font-weight:bold;color:#E8500A;padding-top:8px;">{{ $currencySymbol }}{{ number_format((float) $order->total, 2) }}</td></tr>
+    <tr><td class="muted">{{ $taxLabel }} ({{ number_format((float) $order->tax_rate * 100, 0) }}%)</td><td align="right" style="font-weight:bold;">{{ \App\Support\Money::format($order->tax_amount, $order->currency) }}</td></tr>
+    <tr style="border-top:2px solid #E8500A;"><td style="font-size:13px;font-weight:bold;padding-top:8px;">{{ $totalLabel }}</td><td align="right" style="font-size:13px;font-weight:bold;color:#E8500A;padding-top:8px;">{{ \App\Support\Money::format($order->total, $order->currency) }}</td></tr>
 </table>
 
 <div style="border-top:1px solid #E8E8E8;margin-top:22px;padding-top:16px;text-align:center;">
     <div style="font-size:13px;font-weight:bold;margin-bottom:8px;">{{ $thankYouLabel }}</div>
-    <div class="muted" style="font-size:9px;">FERRO — Forged from Iron, Polished by Luxury | support@ferro.com | ferro.com</div>
+    <div class="muted" style="font-size:9px;">FERRO — Forged from Iron, Polished by Luxury | {{ $contactSetting->support_email }} | ferro.com</div>
     <div class="muted" style="font-size:9px;margin-top:8px;">This invoice is electronically generated and valid without a signature.</div>
 </div>
 
