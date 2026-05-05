@@ -16,6 +16,9 @@
         ['name' => __('admin.nav.administrators'),'route' => 'admin.admins.index','icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', 'match' => 'admin.admins'],
         ['name' => __('admin.nav.leads_waitlist'),'route' => 'admin.leads.index','icon' => '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .82h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.13a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>', 'match' => 'admin.leads'],
         ['name' => __('admin.nav.skin_quiz'),'route' => 'admin.quiz-responses.index','icon' => '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', 'match' => 'admin.quiz-responses'],
+
+        ['section' => __('admin.nav.section_help')],
+        ['name' => __('admin.nav.stakeholder_manual'), 'route' => 'admin.stakeholder-manual', 'icon' => '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>', 'match' => 'admin.stakeholder-manual'],
     ];
 @endphp
 

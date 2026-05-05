@@ -19,6 +19,8 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# Generated on demand (php artisan ferro:export-stakeholder-manual)
+/storage/app/FERRO_Stakeholder_Manual.pdf
 /vendor
 _ide_helper.php
 Homestead.json

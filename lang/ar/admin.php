@@ -18,6 +18,8 @@ return [
         'administrators' => 'المديرون',
         'leads_waitlist' => 'العملاء المحتملون والقائمة',
         'skin_quiz' => 'اختبار البشرة',
+        'section_help' => 'مساعدة',
+        'stakeholder_manual' => 'دليل أصحاب المصلحة (PDF)',
     ],
 
     'layout' => [

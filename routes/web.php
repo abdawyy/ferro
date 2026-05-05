@@ -19,6 +19,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminLanguageController;
+use App\Http\Controllers\Admin\StakeholderManualController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ShopCatalogController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -162,6 +163,10 @@ Route::middleware(['auth', 'admin'])
 
         // Dashboard
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        // Stakeholder operations manual (PDF)
+        Route::get('documentation/stakeholder-manual.pdf', [StakeholderManualController::class, 'download'])
+            ->name('stakeholder-manual');
 
         // Products — full CRUD + image management
         Route::post('products/{product}/restore', [Admin\ProductController::class, 'restore'])->name('products.restore');

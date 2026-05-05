@@ -18,6 +18,8 @@ return [
         'administrators' => 'Administrators',
         'leads_waitlist' => 'Leads & Waitlist',
         'skin_quiz' => 'Skin Quiz',
+        'section_help' => 'Help',
+        'stakeholder_manual' => 'Stakeholder manual (PDF)',
     ],
 
     'layout' => [
