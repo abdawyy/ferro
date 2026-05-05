@@ -66,6 +66,8 @@ return [
             'products.index' => 'right center',
             'login' => 'right center',
             'register' => 'right center',
+            'password.request' => 'right center',
+            'password.reset' => 'right center',
         ],
         'backdrop_routes' => [
             '__default' => 'images/brand/ferro-texture-dark.png',
@@ -82,6 +84,8 @@ return [
             'invoices.download' => 'images/brand/ferro-texture-dark.png',
             'login' => 'images/brand/ferro-hex-logo.png',
             'register' => 'images/brand/ferro-hex-logo.png',
+            'password.request' => 'images/brand/ferro-hex-logo.png',
+            'password.reset' => 'images/brand/ferro-hex-logo.png',
         ],
     ],
 ];
