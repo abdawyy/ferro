@@ -30,10 +30,8 @@
 <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;border-bottom:2px solid #E8500A;padding-bottom:16px;">
     <tr valign="top">
         <td width="48%" align="left">
-            <div style="font-size:26px;font-weight:bold;color:#0A0A0A;">
-                <span style="display:inline-block;width:8px;height:8px;background:#E8500A;margin-right:6px;vertical-align:middle;"></span>FERRO
-            </div>
-            <div class="muted" style="font-size:9px;margin-top:4px;letter-spacing:0.06em;">{{ $brandTagline }}</div>
+            <img src="{{ public_path('images/brand/ferro-hex-logo.png') }}" alt="FERRO" style="height:42px;width:auto;display:block;margin-bottom:6px;">
+            <div class="muted" style="font-size:9px;margin-top:2px;letter-spacing:0.06em;">{{ $brandTagline }}</div>
         </td>
         <td width="52%" align="right">
             <div style="font-size:20px;font-weight:bold;color:#E8500A;letter-spacing:0.06em;">{{ $invoiceLabel }}</div>

@@ -22,11 +22,9 @@
         .email-container { max-width: 600px; margin: 0 auto; background-color: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 2px; overflow: hidden; }
 
         /* Header */
-        .email-header         { padding: 32px 40px; border-bottom: 1px solid #2A2A2A; background-color: #0A0A0A; }
-        .email-header-inner   { display: flex; align-items: center; gap: 12px; }
-        .ferro-logo-icon      { width: 32px; height: 32px; color: #E8500A; }
-        .ferro-wordmark       { font-size: 22px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: #FFFFFF; }
-        .header-orange-bar    { height: 2px; background: linear-gradient(to right, #E8500A, #FF6B2B, transparent); margin-top: 16px; }
+        .email-header         { padding: 0; border-bottom: 1px solid #2A2A2A; background-color: #0A0A0A; }
+        .email-header-banner  { display: block; width: 100%; max-width: 600px; height: auto; border: 0; }
+        .header-orange-bar    { height: 2px; background: linear-gradient(to right, #E8500A, #FF6B2B, transparent); margin-top: 0; }
 
         /* Body */
         .email-body        { padding: 40px; }
@@ -76,7 +74,7 @@
 
         /* Responsive */
         @media only screen and (max-width: 600px) {
-            .email-header, .email-body, .email-footer { padding: 24px 20px !important; }
+            .email-body, .email-footer { padding: 24px 20px !important; }
             .email-heading { font-size: 22px !important; }
         }
     </style>
@@ -88,12 +86,9 @@
 
         {{-- ── Header ─────────────────────────────────────────────────── --}}
         <div class="email-header @yield('header_class')">
-            <div class="email-header-inner">
-                <svg class="ferro-logo-icon" viewBox="0 0 32 32" fill="#E8500A" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 4h24v6H12v4h14v6H12v8H4V4z"/>
-                </svg>
-                <span class="ferro-wordmark">FERRO</span>
-            </div>
+            <a href="{{ url('/') }}" style="display:block;line-height:0;">
+                <img class="email-header-banner" src="{{ asset('images/brand/ferro-brand-marble.png') }}" width="600" alt="FERRO" loading="eager">
+            </a>
             <div class="header-orange-bar"></div>
         </div>
 

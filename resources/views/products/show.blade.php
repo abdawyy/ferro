@@ -10,7 +10,7 @@
 @section('og_type',        'product')
 @section('og_title',        $product->getSeoTitleForLocale(app()->getLocale()))
 @section('og_description',  $seoDesc)
-@section('og_image',        $product->featured_image ? ferro_public_url($product->featured_image) : asset('images/ferro-og-default.jpg'))
+@section('og_image',        $product->featured_image ? ferro_public_url($product->featured_image) : asset('images/ferro-og-default.png'))
 
 {{-- ── Schema.org Product JSON-LD ──────────────────────────────────────── --}}
 @section('schema_org')
