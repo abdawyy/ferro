@@ -43,23 +43,19 @@
     {{-- Background image with parallax --}}
     <div class="absolute inset-0 z-0" id="hero-bg">
         <img
-            src="{{ asset('images/hero-bg.jpg') }}"
+            src="{{ asset(config('ferro.page_backgrounds.heroes.home')) }}"
             alt=""
-            class="w-full h-full object-cover object-center scale-110"
+            class="ferro-brand-photo w-full h-full object-cover object-right max-md:object-center"
             aria-hidden="true"
             loading="eager"
             fetchpriority="high"
+            decoding="sync"
         >
-        {{-- Multi-layer overlay: dark base + hero gradient --}}
-        <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/30 via-ferro-black/60 to-ferro-black"></div>
+        {{-- Multi-layer overlay: dark base + hero gradient (kept lighter so source art stays sharp) --}}
+        <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/22 via-ferro-black/48 to-ferro-black"></div>
         {{-- Forge orange ambient glow --}}
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,rgba(232,80,10,0.12)_0%,transparent_60%)]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,rgba(232,80,10,0.10)_0%,transparent_58%)]"></div>
     </div>
-
-    {{-- Decorative iron grid lines --}}
-    <div class="absolute inset-0 z-0 opacity-[0.03]"
-         style="background-image: linear-gradient(rgba(245,242,238,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,242,238,1) 1px, transparent 1px); background-size: 60px 60px;"
-         aria-hidden="true"></div>
 
     {{-- Hero Content --}}
     <div class="container-ferro relative z-10 pt-[72px]">
@@ -205,9 +201,9 @@
             <div class="relative reveal {{ $isAr ? 'order-2' : 'order-1' }}">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
                     <img
-                        src="{{ asset('images/brand-story.jpg') }}"
+                        src="{{ asset(config('ferro.page_backgrounds.heroes.brand_story')) }}"
                         alt="{{ $isAr ? 'صورة تجسّد قوة فيرو' : 'FERRO — Power and refinement' }}"
-                        class="w-full h-full object-cover"
+                        class="ferro-brand-photo w-full h-full object-cover"
                         loading="lazy"
                         width="600" height="750"
                     >

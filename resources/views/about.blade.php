@@ -14,8 +14,8 @@
 {{-- ── Page Hero ──────────────────────────────────────────────────────── --}}
 <section class="relative min-h-[60vh] flex items-end overflow-hidden pt-[72px]">
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset('images/about-hero.jpg') }}" alt=""
-             class="w-full h-full object-cover object-center" aria-hidden="true" loading="eager">
+        <img src="{{ asset(config('ferro.page_backgrounds.heroes.about')) }}" alt=""
+             class="ferro-brand-photo w-full h-full object-cover object-center" aria-hidden="true" loading="eager" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-t from-ferro-black via-ferro-black/50 to-ferro-black/10"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(232,80,10,0.1)_0%,transparent_60%)]"></div>
     </div>
@@ -71,9 +71,9 @@
             </div>
             <div class="{{ $isAr ? 'order-1' : 'order-2' }} reveal">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
-                    <img src="{{ asset('images/about-story.webp') }}"
+                    <img src="{{ asset(config('ferro.page_backgrounds.heroes.about_story')) }}"
                          alt="{{ $isAr ? 'قصة فيرو' : 'The FERRO story' }}"
-                         class="w-full h-full object-cover" loading="lazy" width="600" height="750">
+                         class="ferro-brand-photo w-full h-full object-cover" loading="lazy" width="900" height="1125" decoding="async">
                     <div class="absolute inset-0 bg-gradient-to-t from-ferro-black/40 to-transparent"></div>
                 </div>
                 {{-- Orange accent --}}

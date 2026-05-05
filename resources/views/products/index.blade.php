@@ -38,14 +38,13 @@
 
 {{-- ── Hero Banner ──────────────────────────────────────────────────────── --}}
 <section class="relative pt-[72px] overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-b from-ferro-obsidian to-ferro-black"></div>
-    {{-- subtle grid lines --}}
-    <div class="absolute inset-0 opacity-[0.04]"
-         style="background-image: linear-gradient(var(--color-ferro-silver,#B0B0B0) 1px, transparent 1px),
-                                   linear-gradient(90deg, var(--color-ferro-silver,#B0B0B0) 1px, transparent 1px);
-                background-size: 60px 60px;"></div>
+    <div class="absolute inset-0 z-0">
+        <img src="{{ asset(config('ferro.page_backgrounds.heroes.shop')) }}" alt=""
+             class="ferro-brand-photo w-full h-full object-cover object-right max-md:object-center opacity-55" aria-hidden="true" loading="eager" decoding="sync">
+        <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/72 via-ferro-obsidian/88 to-ferro-black"></div>
+    </div>
 
-    <div class="container-ferro relative py-20 text-center">
+    <div class="container-ferro relative z-10 py-20 text-center">
         <p class="eyebrow mb-4">{{ $isAr ? 'مجموعتنا' : 'The Collection' }}</p>
         <h1 class="font-display text-5xl md:text-7xl font-semibold tracking-wide text-ferro-white leading-none mb-6">
             {{ $isAr ? 'العناية الفاخرة' : 'Luxury' }}

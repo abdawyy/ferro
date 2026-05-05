@@ -11,16 +11,10 @@
 
 @section('content')
 
-@php
-    $quizBgUrl = file_exists(public_path('images/quiz-bg.jpg'))
-        ? asset('images/quiz-bg.jpg')
-        : config('ferro.page_backgrounds.heroes.quiz', asset('images/quiz-bg.jpg'));
-@endphp
-
 <div class="relative min-h-screen flex items-start pt-[72px] pb-24" x-data="ferroQuiz()">
 
     <div class="absolute inset-0 z-0 bg-ferro-black">
-        <img src="{{ $quizBgUrl }}" alt="" class="w-full h-full object-cover object-center opacity-10" aria-hidden="true" loading="eager">
+        <img src="{{ asset(config('ferro.page_backgrounds.heroes.quiz')) }}" alt="" class="ferro-brand-photo w-full h-full object-cover object-center opacity-[0.22]" aria-hidden="true" loading="eager" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/60 via-ferro-black/80 to-ferro-black"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.10)_0%,transparent_60%)]" aria-hidden="true"></div>
     </div>

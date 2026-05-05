@@ -14,8 +14,8 @@
 {{-- ── Header ──────────────────────────────────────────────────────────── --}}
 <section class="relative pt-[72px] min-h-[45vh] flex items-end overflow-hidden">
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset('images/contact-bg.jpg') }}" alt=""
-             class="w-full h-full object-cover object-center" aria-hidden="true" loading="eager">
+        <img src="{{ asset(config('ferro.page_backgrounds.heroes.contact')) }}" alt=""
+             class="ferro-brand-photo w-full h-full object-cover object-center" aria-hidden="true" loading="eager" decoding="sync">
         <div class="absolute inset-0 bg-gradient-to-t from-ferro-black via-ferro-black/70 to-ferro-black/20"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(232,80,10,0.08)_0%,transparent_60%)]"></div>
     </div>

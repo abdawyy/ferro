@@ -42,7 +42,7 @@
         "@@type": "Organization",
         "name": "FERRO",
         "url": "{{ url('/') }}",
-        "logo": "{{ asset('images/ferro-logo.svg') }}",
+        "logo": "{{ asset('images/brand/ferro-hex-logo.png') }}",
         "description": "Premium nature-powered grooming essentials engineered for the high-performance man.",
         "sameAs": [
             "https://instagram.com/ferrogrooming",
@@ -63,7 +63,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preload" as="image" href="{{ config('ferro.page_backgrounds.heroes.home', asset('images/hero-bg.jpg')) }}">
+    <link rel="preload" as="image" href="{{ asset(config('ferro.page_backgrounds.heroes.home')) }}">
 
     {{-- ── CDN: Google Fonts ──────────────────────────────────────────── --}}
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">

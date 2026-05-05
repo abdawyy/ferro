@@ -8,17 +8,13 @@
 
 <div class="min-h-screen flex items-center justify-center pt-[72px] pb-16 px-4">
 
-    {{-- Background glow --}}
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.06)_0%,transparent_60%)]" aria-hidden="true"></div>
-
     <div class="w-full max-w-md relative z-10">
 
         {{-- Logo --}}
         <div class="text-center mb-10">
             <a href="{{ route('home') }}" class="inline-flex flex-col items-center gap-3">
-                <svg class="w-10 h-10 text-ferro-orange" viewBox="0 0 32 32" fill="currentColor">
-                    <path d="M4 4h24v6H12v4h14v6H12v8H4V4z"/>
-                </svg>
+                <img src="{{ asset('images/brand/ferro-hex-logo.png') }}" alt=""
+                     width="96" height="96" class="ferro-brand-photo h-12 w-12 object-contain object-right" loading="eager" decoding="async">
                 <span class="font-display text-2xl tracking-[0.3em] text-ferro-white uppercase">FERRO</span>
             </a>
             <p class="text-ferro-ash text-body-sm mt-4">

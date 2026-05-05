@@ -586,8 +586,10 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
     background-color: var(--color-ferro-black, #0a0a0a);
     background-image: var(--ferro-page-bg);
     background-size: cover;
-    background-position: center;
-    opacity: 0.22;
+    background-position: var(--ferro-page-bg-position, center);
+    background-repeat: no-repeat;
+    opacity: 0.32;
+    image-rendering: auto;
 }
 
 .ferro-page-backdrop::after {
@@ -596,10 +598,18 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
     inset: 0;
     background: linear-gradient(
         180deg,
-        rgba(10, 10, 10, 0.55) 0%,
-        rgba(10, 10, 10, 0.88) 45%,
-        rgba(10, 10, 10, 0.96) 100%
+        rgba(10, 10, 10, 0.38) 0%,
+        rgba(10, 10, 10, 0.72) 45%,
+        rgba(10, 10, 10, 0.88) 100%
     );
+}
+
+/* Full-bleed brand photography: avoid extra blur from scaling & keep GPU compositing clean */
+img.ferro-brand-photo {
+    image-rendering: auto;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 /* ── Quiz: intro step strip ──────────────────────────────────────────────── */

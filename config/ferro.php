@@ -47,35 +47,41 @@ return [
     |--------------------------------------------------------------------------
     | Page backgrounds (storefront)
     |--------------------------------------------------------------------------
-    | Full-bleed hero fallbacks when files under public/images are absent.
-    | Route backdrop: fixed layer under content (null = skip for that route).
-    | Replace URLs with your own assets in public/images and use asset() in views.
+    | Brand imagery lives in public/images/brand. Fixed backdrop sits under
+    | content (see partials/page-backdrop); heroes reference the same keys.
     */
     'page_backgrounds' => [
         'heroes' => [
-            'home' => 'https://images.unsplash.com/photo-1556228578-0d385b1a4d571?auto=format&fit=crop&w=2400&q=80',
-            'about' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=80',
-            'contact' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2400&q=80',
-            'quiz' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=75',
-            'shop' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=80',
-            'brand_story' => 'https://images.unsplash.com/photo-1608248543803-6ec288bfef52?auto=format&fit=crop&w=1600&q=80',
-            'about_story' => 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1600&q=80',
+            'home' => 'images/brand/ferro-hex-logo.png',
+            'about' => 'images/brand/ferro-brand-marble.png',
+            'contact' => 'images/brand/ferro-texture-dark.png',
+            'quiz' => 'images/brand/ferro-texture-dark.png',
+            'shop' => 'images/brand/ferro-hex-logo.png',
+            'brand_story' => 'images/brand/ferro-brand-marble.png',
+            'about_story' => 'images/brand/ferro-hex-logo.png',
+        ],
+        'backdrop_position' => [
+            '__default' => 'center',
+            'home' => 'right center',
+            'products.index' => 'right center',
+            'login' => 'right center',
+            'register' => 'right center',
         ],
         'backdrop_routes' => [
-            '__default' => 'https://images.unsplash.com/photo-1556228578-0d385b1a4d571?auto=format&fit=crop&w=2400&q=65',
-            'home' => 'https://images.unsplash.com/photo-1556228578-0d385b1a4d571?auto=format&fit=crop&w=2400&q=60',
-            'about' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=60',
-            'contact' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2400&q=60',
-            'quiz' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=58',
-            'products.index' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=65',
-            'products.show' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=65',
-            'cart' => 'https://images.unsplash.com/photo-1608248543803-6ec288bfef52?auto=format&fit=crop&w=2400&q=65',
-            'checkout' => 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2400&q=65',
-            'account' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2400&q=65',
-            'orders.show' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=65',
-            'invoices.download' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=2400&q=60',
-            'login' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=70',
-            'register' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=2400&q=70',
+            '__default' => 'images/brand/ferro-texture-dark.png',
+            'home' => 'images/brand/ferro-texture-dark.png',
+            'about' => 'images/brand/ferro-brand-marble.png',
+            'contact' => 'images/brand/ferro-brand-marble.png',
+            'quiz' => 'images/brand/ferro-texture-dark.png',
+            'products.index' => 'images/brand/ferro-hex-logo.png',
+            'products.show' => 'images/brand/ferro-texture-dark.png',
+            'cart' => 'images/brand/ferro-brand-marble.png',
+            'checkout' => 'images/brand/ferro-brand-marble.png',
+            'account' => 'images/brand/ferro-texture-dark.png',
+            'orders.show' => 'images/brand/ferro-texture-dark.png',
+            'invoices.download' => 'images/brand/ferro-texture-dark.png',
+            'login' => 'images/brand/ferro-hex-logo.png',
+            'register' => 'images/brand/ferro-hex-logo.png',
         ],
     ],
 ];
