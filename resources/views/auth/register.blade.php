@@ -8,14 +8,18 @@
 
 <div class="min-h-screen flex items-center justify-center pt-[72px] pb-16 px-4">
 
-    <div class="w-full max-w-md relative z-10">
+    <div class="w-full max-w-lg relative z-10">
 
         {{-- Logo --}}
         <div class="text-center mb-10">
-            <a href="{{ route('home') }}" class="inline-flex flex-col items-center gap-3">
-                <img src="{{ asset('images/brand/ferro-hex-logo.png') }}" alt=""
-                     width="96" height="96" class="ferro-brand-photo h-12 w-12 object-contain object-right" loading="eager" decoding="async">
-                <span class="font-display text-2xl tracking-[0.3em] text-ferro-white uppercase">FERRO</span>
+            <a href="{{ route('home') }}"
+               class="inline-flex items-center justify-center gap-3 group"
+               aria-label="{{ $isAr ? 'فيرو — الرئيسية' : 'FERRO Home' }}">
+                <svg class="w-10 h-10 sm:w-11 sm:h-11 shrink-0 text-ferro-orange group-hover:scale-105 transition-transform duration-300"
+                     viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M4 4h24v6H12v4h14v6H12v8H4V4z" fill="currentColor"/>
+                </svg>
+                <span class="font-display text-2xl sm:text-3xl tracking-[0.2em] text-ferro-white uppercase">FERRO</span>
             </a>
             <p class="text-ferro-ash text-body-sm mt-4">
                 {{ $isAr ? 'انضم إلى ترسانة فيرو' : 'Join the FERRO Arsenal' }}
@@ -66,12 +70,19 @@
                         <div class="relative">
                             <input
                                 :type="showPw ? 'text' : 'password'"
-                                id="reg-password" name="password"
+                                id="reg-password"
+                                name="password"
                                 class="input-ferro pe-12 @error('password') border-red-500/50 @enderror"
                                 placeholder="••••••••"
-                                autocomplete="off"
-                                    class="absolute inset-y-0 end-4 flex items-center text-ferro-ash hover:text-ferro-silver transition-colors"
-                                    :aria-label="showPw ? '{{ $isAr ? 'إخفاء' : 'Hide' }}' : '{{ $isAr ? 'إظهار' : 'Show' }}'">
+                                autocomplete="new-password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                @click="showPw = !showPw"
+                                class="absolute inset-y-0 end-4 flex items-center text-ferro-ash hover:text-ferro-silver transition-colors"
+                                :aria-label="showPw ? '{{ $isAr ? 'إخفاء كلمة المرور' : 'Hide password' }}' : '{{ $isAr ? 'إظهار كلمة المرور' : 'Show password' }}'"
+                            >
                                 <svg x-show="!showPw" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
@@ -83,17 +94,31 @@
                         <p class="text-ferro-ash text-[11px] mt-1.5">{{ $isAr ? 'على الأقل ٨ أحرف' : 'Minimum 8 characters' }}</p>
                     </div>
 
-                    <div>
-                        <label class="form-label" for="password-confirm">{{ $isAr ? 'تأكيد كلمة المرور' : 'Confirm Password' }}</label>
-                        <input
-                            type="password" id="password-confirm" name="password_confirmation"
-                            class="input-ferro"
-                            placeholder="••••••••"
-                            autocomplete="off"{{ $isAr ? 'اللغة المفضلة' : 'Preferred Language' }}</label>
-                        <select id="preferred-language" name="preferred_language" class="input-ferro">
-                            <option value="en" {{ app()->getLocale() === 'en' ? 'selected' : '' }}>English</option>
-                            <option value="ar" {{ app()->getLocale() === 'ar' ? 'selected' : '' }}>العربية</option>
-                        </select>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 sm:items-end">
+                        <div class="min-w-0">
+                            <label class="form-label" for="password-confirm">{{ $isAr ? 'تأكيد كلمة المرور' : 'Confirm Password' }}</label>
+                            <input
+                                type="password"
+                                id="password-confirm"
+                                name="password_confirmation"
+                                class="input-ferro @error('password_confirmation') border-red-500/50 @enderror"
+                                placeholder="••••••••"
+                                autocomplete="new-password"
+                                required
+                            >
+                        </div>
+                        <div class="min-w-0">
+                            <label class="form-label" for="preferred-language">{{ $isAr ? 'اللغة المفضلة' : 'Preferred Language' }}</label>
+                            <select
+                                id="preferred-language"
+                                name="preferred_language"
+                                class="input-ferro @error('preferred_language') border-red-500/50 @enderror"
+                            >
+                                @php $prefLang = old('preferred_language', app()->getLocale()); @endphp
+                                <option value="en" @selected($prefLang === 'en')>English</option>
+                                <option value="ar" @selected($prefLang === 'ar')>العربية</option>
+                            </select>
+                        </div>
                     </div>
 
                     {{-- Waitlist opt-in --}}

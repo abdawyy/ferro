@@ -11,7 +11,7 @@
 
 @section('content')
 
-<div class="relative min-h-screen flex items-start pt-[72px] pb-24" x-data="ferroQuiz()">
+<div class="relative min-h-screen flex flex-col pt-[72px] pb-16 sm:pb-20" x-data="ferroQuiz()">
 
     <div class="absolute inset-0 z-0 bg-ferro-black">
         <img src="{{ asset(config('ferro.page_backgrounds.heroes.quiz')) }}" alt="" class="ferro-brand-photo w-full h-full object-cover object-center opacity-[0.22]" aria-hidden="true" loading="eager" decoding="async">
@@ -19,31 +19,32 @@
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.10)_0%,transparent_60%)]" aria-hidden="true"></div>
     </div>
 
-    <div class="container-ferro relative z-10 section-pad w-full">
+    {{-- Tighter vertical rhythm than section-pad so intro + CTA fit laptop viewports --}}
+    <div class="container-ferro relative z-10 w-full flex-1 py-6 sm:py-8 md:py-10 lg:py-12">
 
-        <div x-show="step === 0" x-transition class="max-w-3xl mx-auto text-center">
-            <svg class="w-10 h-10 text-ferro-orange mx-auto mb-8" viewBox="0 0 32 32" fill="currentColor">
+        <div x-show="step === 0" x-transition class="quiz-intro-step max-w-5xl mx-auto text-center px-1 sm:px-0">
+            <svg class="w-8 h-8 sm:w-10 sm:h-10 text-ferro-orange mx-auto mb-4 sm:mb-5" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
                 <path d="M4 4h24v6H12v4h14v6H12v8H4V4z"/>
             </svg>
             <span class="eyebrow">{{ $isAr ? 'خصّص روتينك' : 'Personalize Your Routine' }}</span>
-            <h1 class="font-display text-display-xl text-ferro-white mb-6">
+            <h1 class="font-display text-ferro-white mb-3 sm:mb-4 text-[clamp(1.75rem,4vw+1rem,3.5rem)] leading-tight tracking-tight">
                 {{ $isAr ? 'ما هو ملف بشرتك؟' : "What's Your Skin Profile?" }}
             </h1>
-            <p class="text-ferro-silver text-body-lg mb-6">
+            <p class="text-ferro-silver text-body-lg mb-4 sm:mb-5 max-w-2xl mx-auto leading-relaxed">
                 {{ $isAr
                     ? '٥ أسئلة سريعة للحصول على روتين فيرو المثالي لنمط حياتك وأهدافك.'
                     : '5 quick questions to find your perfect FERRO regimen tailored to your lifestyle and goals.' }}
             </p>
-            <p class="text-ferro-ash text-xs uppercase tracking-widest mb-2">{{ $isAr ? 'ما سنغطيه' : 'What we’ll cover' }}</p>
-            <div class="quiz-intro-strip scrollbar-hide">
+            <p class="text-ferro-ash text-xs uppercase tracking-widest mb-3">{{ $isAr ? 'ما سنغطيه' : 'What we’ll cover' }}</p>
+            <div class="quiz-intro-strip w-full max-w-5xl mx-auto text-start">
                 <template x-for="(q, qi) in questions" :key="'intro-' + qi">
                     <div class="quiz-intro-card">
-                        <img :src="q.step_img" :alt="isAr ? q.step_label_ar : q.step_label_en" width="176" height="88" loading="lazy">
-                        <span x-text="(qi + 1) + ' — ' + (isAr ? q.step_label_ar : q.step_label_en)"></span>
+                        <img :src="q.step_img" :alt="isAr ? q.step_label_ar : q.step_label_en" width="320" height="160" loading="lazy" class="quiz-intro-card-img">
+                        <span class="quiz-intro-card-label" x-text="(qi + 1) + ' — ' + (isAr ? q.step_label_ar : q.step_label_en)"></span>
                     </div>
                 </template>
             </div>
-            <div class="flex flex-wrap justify-center gap-4 mt-10">
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
                 <button type="button" @click="step = 1" class="btn-primary clip-luxury-md">
                     {{ $isAr ? 'ابدأ الاختبار المجاني' : 'Start the Free Quiz' }}
                     <svg class="w-4 h-4 {{ $isAr ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

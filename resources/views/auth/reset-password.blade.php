@@ -11,10 +11,14 @@
     <div class="w-full max-w-md relative z-10">
 
         <div class="text-center mb-10">
-            <a href="{{ route('home') }}" class="inline-flex flex-col items-center gap-3">
-                <img src="{{ asset('images/brand/ferro-hex-logo.png') }}" alt=""
-                     width="96" height="96" class="ferro-brand-photo h-12 w-12 object-contain object-right" loading="eager" decoding="async">
-                <span class="font-display text-2xl tracking-[0.3em] text-ferro-white uppercase">FERRO</span>
+            <a href="{{ route('home') }}"
+               class="inline-flex items-center justify-center gap-3 group"
+               aria-label="{{ $isAr ? 'فيرو — الرئيسية' : 'FERRO Home' }}">
+                <svg class="w-10 h-10 sm:w-11 sm:h-11 shrink-0 text-ferro-orange group-hover:scale-105 transition-transform duration-300"
+                     viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M4 4h24v6H12v4h14v6H12v8H4V4z" fill="currentColor"/>
+                </svg>
+                <span class="font-display text-2xl sm:text-3xl tracking-[0.2em] text-ferro-white uppercase">FERRO</span>
             </a>
             <p class="text-ferro-ash text-body-sm mt-4">
                 {{ $isAr ? 'اختر كلمة مرور جديدة لحسابك.' : 'Choose a new password for your account.' }}
