@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Customer-facing money formatting (EGP market: LE suffix).
+ * Customer-facing money formatting (Egypt storefront: EGP label, no $).
  */
 final class Money
 {
@@ -12,7 +12,7 @@ final class Money
         $n = number_format((float) $amount, 2);
 
         return match (strtoupper((string) ($currency ?? 'EGP'))) {
-            'EGP', 'USD', 'LE' => $n.' LE',
+            'EGP', 'LE', 'USD' => $n.' EGP',
             'AED' => $n.' AED',
             default => $n.' '.strtoupper((string) $currency),
         };

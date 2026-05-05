@@ -257,6 +257,17 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
     }
 }
 
+/* Out-of-stock cards: no lift; muted photo */
+.card-product.card-product--oos:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--ferro-carbon);
+}
+.card-product--oos .product-image-wrap img {
+    filter: grayscale(0.45);
+    opacity: 0.9;
+}
+
 /* Animation helpers */
 @utility fill-both  { animation-fill-mode: both; }
 @utility delay-100  { animation-delay: 100ms; }

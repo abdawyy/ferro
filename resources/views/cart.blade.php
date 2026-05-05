@@ -171,7 +171,7 @@ function ferroCart() {
             const cur = (this.items[0] && this.items[0].currency) || 'EGP';
             const n = Number(v) || 0;
             const u = String(cur).toUpperCase();
-            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' LE';
+            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' EGP';
             if (u === 'AED') return n.toFixed(2) + ' AED';
             return n.toFixed(2) + ' ' + u;
         },

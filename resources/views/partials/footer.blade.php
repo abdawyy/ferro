@@ -44,8 +44,6 @@
                     @foreach([
                         [route('about'),   app()->getLocale() === 'ar' ? 'قصتنا' : 'Our Story'],
                         [route('contact'), app()->getLocale() === 'ar' ? 'تواصل معنا' : 'Contact'],
-                        ['#', app()->getLocale() === 'ar' ? 'الشراكات' : 'Partnerships'],
-                        ['#', app()->getLocale() === 'ar' ? 'العمل معنا' : 'Careers'],
                     ] as [$url, $label])
                         <li><a href="{{ $url }}" class="text-ferro-ash text-body-sm hover:text-ferro-orange transition-colors duration-200">{{ $label }}</a></li>
                     @endforeach
@@ -69,14 +67,14 @@
             <p class="text-ferro-ash text-xs">
                 © {{ date('Y') }} FERRO. {{ app()->getLocale() === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.' }}
             </p>
-            <div class="flex items-center gap-6">
-                <a href="#" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
+                <a href="{{ route('legal.privacy') }}" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}
                 </a>
-                <a href="#" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
+                <a href="{{ route('legal.terms') }}" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'الشروط والأحكام' : 'Terms of Service' }}
                 </a>
-                <a href="#" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
+                <a href="{{ route('legal.returns') }}" class="text-ferro-ash text-xs hover:text-ferro-silver transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'سياسة الإرجاع' : 'Return Policy' }}
                 </a>
             </div>

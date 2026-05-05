@@ -103,7 +103,7 @@
                         <div class="flex gap-4 bg-ferro-obsidian border border-ferro-carbon p-4" style="border-radius: 2px;">
                             <div class="w-20 h-24 bg-ferro-carbon flex-shrink-0 overflow-hidden" style="border-radius: 2px;">
                                 @if($item->product?->featured_image)
-                                    <img src="{{ asset($item->product->featured_image) }}" alt="{{ $item->product_name }}"
+                                    <img src="{{ ferro_public_url($item->product->featured_image) }}" alt="{{ $item->product_name }}"
                                          class="w-full h-full object-cover">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center">

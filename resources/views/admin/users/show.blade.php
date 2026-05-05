@@ -100,7 +100,7 @@
                     @php $sb = ['delivered'=>'badge-success','shipped'=>'badge-info','confirmed'=>'badge-success','processing'=>'badge-warning','pending_payment'=>'badge-warning','cancelled'=>'badge-danger','refunded'=>'badge-neutral'][$order->status] ?? 'badge-neutral'; @endphp
                     <tr>
                         <td class="mono text-orange">#{{ $order->order_number }}</td>
-                        <td class="mono">${{ number_format($order->total, 2) }}</td>
+                        <td class="mono">{{ ferro_money($order->total, $order->currency) }}</td>
                         <td><span class="badge {{ $sb }}">{{ ucwords(str_replace('_',' ',$order->status)) }}</span></td>
                         <td class="text-muted text-sm">{{ $order->created_at->format('d M Y') }}</td>
                         <td><a href="{{ route('admin.orders.show', $order) }}" class="btn btn-secondary btn-xs">View</a></td>

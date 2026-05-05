@@ -273,7 +273,7 @@ function ferroCheckout(prefill, cityRates, isAr) {
             const n = Number(amount) || 0;
             const cur = this.moneyCurrency();
             const u = String(cur).toUpperCase();
-            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' LE';
+            if (u === 'EGP' || u === 'USD' || u === 'LE') return n.toFixed(2) + ' EGP';
             if (u === 'AED') return n.toFixed(2) + ' AED';
             return n.toFixed(2) + ' ' + u;
         },

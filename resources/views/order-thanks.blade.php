@@ -21,7 +21,7 @@
             <p class="font-mono text-ferro-orange text-xl">{{ $order->order_number }}</p>
             <p class="text-ferro-silver text-sm mt-4">
                 {{ $isAr ? 'الإجمالي' : 'Total' }}:
-                <span class="text-ferro-white font-semibold">${{ number_format((float) $order->total, 2) }}</span>
+                <span class="text-ferro-white font-semibold">{{ ferro_money($order->total, $order->currency) }}</span>
                 {{ strtoupper($order->currency) }}
             </p>
         </div>

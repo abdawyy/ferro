@@ -196,10 +196,10 @@
             {{-- Featured Image --}}
             <div class="admin-card">
                 <div class="admin-card-header"><h2 class="admin-card-title">Featured Image</h2></div>
-                <div class="admin-card-body" x-data="{ preview: '{{ $editing && $product->featured_image ? Storage::disk('public')->url($product->featured_image) : '' }}' }">
+                <div class="admin-card-body" x-data="{ preview: '{{ $editing && $product->featured_image ? ferro_public_url($product->featured_image) : '' }}' }">
                     @if($editing && $product->featured_image)
                     <div style="margin-bottom: 16px;">
-                        <img :src="preview" src="{{ Storage::disk('public')->url($product->featured_image) }}"
+                        <img :src="preview" src="{{ ferro_public_url($product->featured_image) }}"
                              alt="Current featured image"
                              style="max-width: 100%; max-height: 240px; border-radius: 4px; border: 1px solid var(--admin-border); object-fit: cover;">
                     </div>
@@ -227,7 +227,7 @@
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
                         @foreach($product->gallery_images as $index => $img)
                         <div style="position: relative;" x-data>
-                            <img src="{{ Storage::disk('public')->url($img) }}" alt="Gallery {{ $index + 1 }}"
+                            <img src="{{ ferro_public_url($img) }}" alt="Gallery {{ $index + 1 }}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 3px; border: 1px solid var(--admin-border);">
                             <button type="button"
                                     onclick="deleteGalleryImage({{ $product->id }}, {{ $index }}, this.closest('div'))"

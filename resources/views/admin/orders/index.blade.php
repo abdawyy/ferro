@@ -81,7 +81,7 @@
                         <div class="text-muted text-sm">{{ $custEmail ?? '—' }}</div>
                     </td>
                     <td class="text-muted">{{ $order->items?->sum('quantity') ?? '—' }}</td>
-                    <td class="mono">${{ number_format($order->total, 2) }}</td>
+                    <td class="mono">{{ ferro_money($order->total, $order->currency) }}</td>
                     <td><span class="badge {{ $payBadge }}">{{ ucfirst($order->payment_status ?? 'pending') }}</span></td>
                     <td><span class="badge {{ $statusBadge }}">{{ ucwords(str_replace('_', ' ', $order->status)) }}</span></td>
                     <td class="text-muted text-sm">{{ $order->created_at->format('d M Y') }}</td>

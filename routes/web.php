@@ -27,6 +27,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CheckoutOrderController;
 use App\Http\Controllers\CheckoutPageController;
+use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\ContactPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
@@ -96,6 +97,20 @@ Route::view('/about', 'about')->name('about');
 Route::view('/quiz', 'quiz')->name('quiz');
 Route::get('/contact', ContactPageController::class)->name('contact');
 
+// CMS pages (admin-managed); legal URLs are fixed aliases for footer / SEO
+Route::get('/privacy-policy', [CmsPageController::class, 'show'])
+    ->defaults('slug', 'privacy-policy')
+    ->name('legal.privacy');
+Route::get('/terms-of-service', [CmsPageController::class, 'show'])
+    ->defaults('slug', 'terms-of-service')
+    ->name('legal.terms');
+Route::get('/return-policy', [CmsPageController::class, 'show'])
+    ->defaults('slug', 'return-policy')
+    ->name('legal.returns');
+Route::get('/pages/{slug}', [CmsPageController::class, 'show'])
+    ->name('pages.show')
+    ->where('slug', '[a-z0-9\-]+');
+
 // ── Authenticated routes ───────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', function () {
@@ -141,7 +156,7 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/lang/{locale}', [Admin\AdminLanguageController::class, 'switch'])
+        Route::get('/lang/{locale}', [AdminLanguageController::class, 'switch'])
             ->name('locale.switch')
             ->where('locale', 'en|ar');
 
@@ -157,6 +172,8 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('contact-settings/edit', [Admin\ContactSettingController::class, 'edit'])->name('contact-settings.edit');
         Route::put('contact-settings', [Admin\ContactSettingController::class, 'update'])->name('contact-settings.update');
+
+        Route::resource('pages', Admin\PageController::class)->except(['show']);
         Route::post('products/{product}/images', [Admin\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('products/{product}/images/{index}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
 

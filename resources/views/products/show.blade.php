@@ -10,7 +10,7 @@
 @section('og_type',        'product')
 @section('og_title',        $product->getSeoTitleForLocale(app()->getLocale()))
 @section('og_description',  $seoDesc)
-@section('og_image',        $product->featured_image ? asset($product->featured_image) : asset('images/ferro-og-default.jpg'))
+@section('og_image',        $product->featured_image ? ferro_public_url($product->featured_image) : asset('images/ferro-og-default.jpg'))
 
 {{-- ── Schema.org Product JSON-LD ──────────────────────────────────────── --}}
 @section('schema_org')
@@ -40,7 +40,7 @@
 
 @php
     $isComingSoon = $product->status === \App\Models\Product::STATUS_COMING_SOON;
-    $isOutOfStock = $product->status === \App\Models\Product::STATUS_OUT_OF_STOCK;
+    $isOutOfStock = ! $isComingSoon && $product->is_storefront_out_of_stock;
 @endphp
 
 {{-- ── Breadcrumb ──────────────────────────────────────────────────────── --}}
@@ -122,6 +122,14 @@
                         </div>
                     @endif
 
+                    @if($isOutOfStock)
+                        <div class="absolute inset-0 bg-ferro-black/50 flex items-end p-4 z-[15] pointer-events-none">
+                            <span class="badge-out-of-stock w-full justify-center">
+                                {{ $isAr ? 'نفد المخزون' : 'Out of Stock' }}
+                            </span>
+                        </div>
+                    @endif
+
                     {{-- Status badge --}}
                     @if(!$isComingSoon)
                         <div class="absolute top-4 {{ $isAr ? 'end-4' : 'start-4' }} flex flex-col gap-2 z-20">
@@ -133,7 +141,7 @@
                                     {{ $isAr ? 'جديد' : 'New' }}
                                 </span>
                             @endif
-                            @if($product->is_low_stock)
+                            @if($product->is_low_stock && ! $isOutOfStock)
                                 <span class="badge bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
                                     {{ $isAr ? 'كميات محدودة' : 'Low Stock' }}
                                 </span>
@@ -146,21 +154,21 @@
                 @if($product->gallery_images && count($product->gallery_images) > 1)
                     <div class="flex gap-3 mt-4 overflow-x-auto pb-2">
                         <button
-                            @click="setImage('{{ asset($product->featured_image) }}')"
+                            @click="setImage('{{ ferro_public_url($product->featured_image) }}')"
                             class="flex-shrink-0 w-20 aspect-square overflow-hidden border-2 transition-all duration-200"
-                            :class="activeImage === '{{ asset($product->featured_image) }}' ? 'border-ferro-orange' : 'border-ferro-carbon hover:border-ferro-ash'"
+                            :class="activeImage === '{{ ferro_public_url($product->featured_image) }}' ? 'border-ferro-orange' : 'border-ferro-carbon hover:border-ferro-ash'"
                             style="border-radius: 2px;"
                         >
-                            <img src="{{ asset($product->featured_image) }}" alt="" class="w-full h-full object-cover">
+                            <img src="{{ ferro_public_url($product->featured_image) }}" alt="" class="w-full h-full object-cover">
                         </button>
                         @foreach($product->gallery_images as $img)
                             <button
-                                @click="setImage('{{ asset($img) }}')"
+                                @click="setImage('{{ ferro_public_url($img) }}')"
                                 class="flex-shrink-0 w-20 aspect-square overflow-hidden border-2 transition-all duration-200"
-                                :class="activeImage === '{{ asset($img) }}' ? 'border-ferro-orange' : 'border-ferro-carbon hover:border-ferro-ash'"
+                                :class="activeImage === '{{ ferro_public_url($img) }}' ? 'border-ferro-orange' : 'border-ferro-carbon hover:border-ferro-ash'"
                                 style="border-radius: 2px;"
                             >
-                                <img src="{{ asset($img) }}" alt="" class="w-full h-full object-cover">
+                                <img src="{{ ferro_public_url($img) }}" alt="" class="w-full h-full object-cover">
                             </button>
                         @endforeach
                     </div>
@@ -207,7 +215,7 @@
                             </span>
                         @endif
                         <link itemprop="availability"
-                              href="{{ $product->status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}">
+                              href="{{ $isOutOfStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock' }}">
                     @endif
                 </div>
 
@@ -244,9 +252,11 @@
                     </div>
                 @elseif($isOutOfStock)
                     <div id="pdp-restock" class="mb-8">
-                        <div class="badge-out-of-stock mb-4 inline-flex">
-                            {{ $isAr ? 'نفد المخزون حالياً' : 'Currently Out of Stock' }}
-                        </div>
+                        <button type="button" disabled
+                                class="btn-primary w-full clip-luxury-md opacity-60 cursor-not-allowed mb-6"
+                                aria-disabled="true">
+                            {{ $isAr ? 'نفد المخزون — غير متاح للشراء' : 'Out of Stock — Unavailable' }}
+                        </button>
                         <div class="waitlist-card">
                             <p class="text-ferro-silver text-body-sm mb-4">
                                 {{ $isAr ? 'أشعرني حين يعود للمخزون' : 'Notify me when back in stock' }}
@@ -422,7 +432,7 @@
 <script>
 function productGallery() {
     return {
-        activeImage: '{{ $product->featured_image ? asset($product->featured_image) : '' }}',
+        activeImage: '{{ $product->featured_image ? ferro_public_url($product->featured_image) : '' }}',
         setImage(src) { this.activeImage = src; }
     };
 }

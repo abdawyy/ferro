@@ -68,23 +68,33 @@
             <td style="font-weight: 500;">{{ $item->product_name }}</td>
             <td style="color: #6B6B6B; font-size: 11px; font-family: monospace;">{{ $item->product?->sku ?? '—' }}</td>
             <td style="text-align: center;">{{ $item->quantity }}</td>
-            <td style="text-align: right;">${{ number_format($item->unit_price, 2) }}</td>
-            <td style="text-align: right; font-weight: 600;">${{ number_format($item->unit_price * $item->quantity, 2) }}</td>
+            <td style="text-align: right;">{{ ferro_money($item->unit_price, $order->currency) }}</td>
+            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr>
             <td colspan="4" style="text-align: right; color: #6B6B6B; font-size: 12px; padding: 8px 14px; border-top: 1px solid #2A2A2A;">Subtotal</td>
-            <td style="text-align: right; padding: 8px 14px; border-top: 1px solid #2A2A2A;">${{ number_format($order->subtotal, 2) }}</td>
+            <td style="text-align: right; padding: 8px 14px; border-top: 1px solid #2A2A2A;">{{ ferro_money($order->subtotal, $order->currency) }}</td>
+        </tr>
+        @if((float) $order->discount_amount > 0)
+        <tr>
+            <td colspan="4" style="text-align: right; color: #22C55E; font-size: 12px; padding: 4px 14px;">Discount @if($order->coupon_code)({{ $order->coupon_code }})@endif</td>
+            <td style="text-align: right; padding: 4px 14px; color: #22C55E;">−{{ ferro_money($order->discount_amount, $order->currency) }}</td>
+        </tr>
+        @endif
+        <tr>
+            <td colspan="4" style="text-align: right; color: #6B6B6B; font-size: 12px; padding: 4px 14px;">Shipping</td>
+            <td style="text-align: right; padding: 4px 14px;">{{ (float) $order->shipping_amount > 0 ? ferro_money($order->shipping_amount, $order->currency) : 'Free' }}</td>
         </tr>
         <tr>
-            <td colspan="4" style="text-align: right; color: #6B6B6B; font-size: 12px; padding: 4px 14px;">Tax ({{ $order->tax_rate ?? 5 }}%)</td>
-            <td style="text-align: right; padding: 4px 14px;">${{ number_format($order->tax_amount, 2) }}</td>
+            <td colspan="4" style="text-align: right; color: #6B6B6B; font-size: 12px; padding: 4px 14px;">Tax ({{ number_format((float) ($order->tax_rate ?? 0) * 100, 0) }}%)</td>
+            <td style="text-align: right; padding: 4px 14px;">{{ ferro_money($order->tax_amount, $order->currency) }}</td>
         </tr>
         <tr class="total-row">
-            <td colspan="4" style="text-align: right; padding: 12px 14px; font-size: 13px;">GRAND TOTAL</td>
-            <td style="text-align: right; padding: 12px 14px;" class="grand-total">${{ number_format($order->grand_total, 2) }}</td>
+            <td colspan="4" style="text-align: right; padding: 12px 14px; font-size: 13px;">TOTAL</td>
+            <td style="text-align: right; padding: 12px 14px;" class="grand-total">{{ ferro_money($order->total, $order->currency) }}</td>
         </tr>
     </tfoot>
 </table>

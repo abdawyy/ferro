@@ -65,7 +65,7 @@
                 <tr>
                     <td>
                         @if($product->featured_image)
-                        <img src="{{ Storage::disk('public')->url($product->featured_image) }}"
+                        <img src="{{ ferro_public_url($product->featured_image) }}"
                              alt="{{ $product->getTranslation('name','en') }}"
                              class="image-thumb">
                         @else
@@ -83,9 +83,9 @@
                     </td>
                     <td class="mono text-muted">{{ $product->sku }}</td>
                     <td class="mono">
-                        ${{ number_format($product->price, 2) }}
+                        {{ ferro_money($product->price, $product->currency) }}
                         @if($product->compare_price)
-                        <div class="text-muted text-sm" style="text-decoration:line-through;">${{ number_format($product->compare_price, 2) }}</div>
+                        <div class="text-muted text-sm" style="text-decoration:line-through;">{{ ferro_money($product->compare_price, $product->currency) }}</div>
                         @endif
                     </td>
                     <td style="text-align:center;">

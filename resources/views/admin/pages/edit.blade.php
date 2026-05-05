@@ -87,7 +87,7 @@
                         <input id="slug" name="slug" type="text" required class="form-input mono"
                                value="{{ old('slug', $page->slug ?? '') }}"
                                placeholder="e.g. about-us">
-                        <div class="form-hint">URL: /pages/{slug} — lowercase, hyphens only</div>
+                        <div class="form-hint">Public URL: <span class="mono">/pages/your-slug</span>. Legal pages use fixed URLs: <span class="mono">/privacy-policy</span>, <span class="mono">/terms-of-service</span>, <span class="mono">/return-policy</span> — keep those slugs unchanged so footer links work.</div>
                         @error('slug')<div class="form-error">{{ $message }}</div>@enderror
                     </div>
 

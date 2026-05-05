@@ -8,23 +8,13 @@
 @php
     $isAr         = app()->getLocale() === 'ar';
     $isComingSoon = $showComingSoon ?? ($product->status === \App\Models\Product::STATUS_COMING_SOON);
-    $isOutOfStock = $product->status === \App\Models\Product::STATUS_OUT_OF_STOCK;
+    $isOutOfStock = ! $isComingSoon && $product->is_storefront_out_of_stock;
     $pdpUrl       = route('products.show', $product->slug);
-    $featuredUrl  = null;
-    if ($product->featured_image) {
-        $fi = $product->featured_image;
-        if (\Illuminate\Support\Str::startsWith($fi, ['http://', 'https://', '//'])) {
-            $featuredUrl = $fi;
-        } elseif (\Illuminate\Support\Str::startsWith($fi, 'images/')) {
-            $featuredUrl = asset($fi);
-        } else {
-            $featuredUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($fi);
-        }
-    }
+    $featuredUrl = ferro_public_url($product->featured_image);
 @endphp
 
 <article
-    class="card-product group min-w-0"
+    class="card-product group min-w-0 {{ $isOutOfStock ? 'card-product--oos' : '' }}"
     itemscope
     itemtype="https://schema.org/Product"
 >
@@ -57,6 +47,9 @@
             @elseif($product->is_best_seller)
                 <span class="badge bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">{{ $isAr ? 'الأكثر مبيعاً' : 'Best Seller' }}</span>
             @endif
+            @if($product->is_low_stock && ! $isOutOfStock)
+                <span class="badge bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">{{ $isAr ? 'كميات محدودة' : 'Low Stock' }}</span>
+            @endif
             @if($product->is_on_sale && !$isComingSoon)
                 <span class="badge bg-ferro-orange/15 text-ferro-orange border border-ferro-orange/30">
                     -{{ $product->discount_percent }}%
@@ -65,7 +58,7 @@
         </div>
 
         {{-- Subscription badge --}}
-        @if($product->is_subscribable && !$isComingSoon)
+        @if($product->is_subscribable && !$isComingSoon && !$isOutOfStock)
             <div class="absolute top-3 {{ $isAr ? 'start-3' : 'end-3' }} z-20">
                 <span class="badge bg-purple-500/15 text-purple-400 border border-purple-500/30">
                     {{ $isAr ? 'اشتراك' : 'Subscribe' }}
@@ -91,8 +84,8 @@
         @endif
 
         {{-- Out of stock overlay --}}
-        @if($isOutOfStock && !$isComingSoon)
-            <div class="absolute inset-0 bg-ferro-black/50 flex items-end p-4 z-10">
+        @if($isOutOfStock)
+            <div class="absolute inset-0 bg-ferro-black/55 flex items-end p-4 z-10 pointer-events-none">
                 <span class="badge-out-of-stock w-full justify-center">{{ $isAr ? 'نفد المخزون' : 'Out of Stock' }}</span>
             </div>
         @endif
@@ -125,6 +118,9 @@
         <div class="flex flex-col gap-3 w-full min-w-0 {{ ($showQuickAdd ?? false) ? '' : 'sm:flex-row sm:items-end sm:justify-between sm:gap-3' }}">
             <div class="min-w-0 shrink w-full {{ ($showQuickAdd ?? false) ? '' : 'sm:w-auto' }}" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                 <meta itemprop="priceCurrency" content="{{ $product->currency }}">
+                @if(!$isComingSoon)
+                    <link itemprop="availability" href="{{ $isOutOfStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock' }}">
+                @endif
                 @if($isComingSoon)
                     <span class="text-ferro-orange text-label tracking-widest uppercase font-semibold">
                         {{ $isAr ? 'سعر قريباً' : 'Price TBA' }}
@@ -149,9 +145,11 @@
                     {{ $isAr ? 'أشعرني' : 'Notify Me' }}
                 </a>
             @elseif($isOutOfStock)
-                <a href="{{ $pdpUrl }}#pdp-restock" class="btn-secondary px-4 py-2 text-xs shrink-0 text-center">
-                    {{ $isAr ? 'أشعرني' : 'Notify Me' }}
-                </a>
+                <button type="button" disabled
+                        class="btn-secondary px-4 py-2 text-xs shrink-0 text-center w-full sm:w-auto opacity-65 cursor-not-allowed"
+                        aria-disabled="true">
+                    {{ $isAr ? 'نفد المخزون' : 'Out of Stock' }}
+                </button>
             @elseif($showQuickAdd ?? false)
                 <div class="flex flex-wrap items-stretch sm:items-center gap-2 w-full {{ $isAr ? 'justify-end' : 'justify-start' }}">
                     <button

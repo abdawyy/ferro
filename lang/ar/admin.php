@@ -12,6 +12,7 @@ return [
         'shop_filters' => 'فلاتر المتجر',
         'shipping_eg' => 'الشحن (مصر)',
         'storefront_contact' => 'بيانات التواصل للمتجر',
+        'storefront_pages' => 'صفحات المتجر',
         'orders' => 'الطلبات',
         'users' => 'المستخدمون',
         'administrators' => 'المديرون',

@@ -12,6 +12,7 @@ return [
         'shop_filters' => 'Shop filters',
         'shipping_eg' => 'Shipping (EG)',
         'storefront_contact' => 'Storefront contact',
+        'storefront_pages' => 'Storefront pages',
         'orders' => 'Orders',
         'users' => 'Users',
         'administrators' => 'Administrators',
