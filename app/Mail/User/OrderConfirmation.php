@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Branded transactional email: order confirmation + invoice PDF attachment.
@@ -41,6 +42,7 @@ class OrderConfirmation extends Mailable
                 'order'   => $this->order,
                 'locale'  => $this->order->language,
                 'isRtl'   => $this->order->language === 'ar',
+                'trackingUrl' => URL::signedRoute('orders.track', ['order' => $this->order->id], now()->addYear()),
             ]
         );
     }

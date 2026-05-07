@@ -25,7 +25,6 @@
     $estimatedDate   = $order->estimated_delivery_at
         ? \Carbon\Carbon::parse($order->estimated_delivery_at)->format('d F Y')
         : null;
-    $trackingUrl     = $order->tracking_url ?? null;
 @endphp
 
 {{-- Hero Shipping Illustration --}}
@@ -51,12 +50,7 @@
         ['label' => $t['order_num'],    'value' => '#' . $order->order_number],
         ['label' => $t['carrier'],      'value' => $carrier],
         ['label' => $t['est_delivery'], 'value' => $estimatedDate],
-        ['label' => $t['ship_to'],      'value' => implode(', ', array_filter([
-            $order->shipping_address['name']    ?? null,
-            $order->shipping_address['address'] ?? null,
-            $order->shipping_address['city']    ?? null,
-            $order->shipping_address['country'] ?? null,
-        ]))],
+        ['label' => $t['ship_to'],      'value' => $order->shippingSummaryForMail()],
     ], fn($row) => !empty($row['value'])) as $row)
     <div style="display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid #2A2A2A;">
         <span style="min-width: 150px; font-size: 11px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.1em;">{{ $row['label'] }}</span>
@@ -89,7 +83,7 @@
 <hr class="email-divider">
 
 <div class="email-btn-center">
-    <a href="{{ $trackingUrl ?? route('orders.show', $order->id) }}" class="email-btn">{{ $t['track_cta'] }}</a>
+    <a href="{{ $trackingUrl }}" class="email-btn">{{ $t['track_cta'] }}</a>
 </div>
 
 <p class="email-text" style="text-align: center; margin-top: 16px;">

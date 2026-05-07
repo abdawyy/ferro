@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Events\LeadRegistered;
 use App\Events\OrderPlaced;
 use App\Events\OrderShipped;
+use App\Events\OrderStatusChanged;
 use App\Events\WaitlistReleased;
 use App\Listeners\HandleLeadRegistered;
 use App\Listeners\HandleOrderPlaced;
 use App\Listeners\HandleOrderShipped;
 use App\Listeners\HandleWaitlistReleased;
+use App\Listeners\NotifyCustomerOrderStatus;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -28,6 +30,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderShipped::class => [
             HandleOrderShipped::class,
+        ],
+        OrderStatusChanged::class => [
+            NotifyCustomerOrderStatus::class,
         ],
         WaitlistReleased::class => [
             HandleWaitlistReleased::class,

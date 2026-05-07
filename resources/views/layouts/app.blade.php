@@ -78,9 +78,12 @@
     <link rel="icon"             type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
     <meta name="theme-color" content="#0A0A0A">
+    <link rel="stylesheet" href="{{ asset('build/assets/app-CnFwdGPi.css') }}">
+<script type="module" src="{{ asset('build/assets/app-BaDZgPgy.js') }}"></script>
 
     {{-- ── App bundle (manifest <link>/<script> in prod; @vite when dev hot) ── --}}
     @include('partials.vite-assets')
+
 
     {{-- ── Page-level head additions ─────────────────────────────────── --}}
     @stack('head')

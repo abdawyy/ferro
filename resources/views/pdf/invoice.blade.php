@@ -30,7 +30,16 @@
 <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;border-bottom:2px solid #E8500A;padding-bottom:16px;">
     <tr valign="top">
         <td width="48%" align="left">
-            <img src="{{ public_path('images/brand/ferro-hex-logo.png') }}" alt="FERRO" style="height:42px;width:auto;display:block;margin-bottom:6px;">
+            <table cellspacing="0" cellpadding="0" style="margin-bottom:6px;">
+                <tr>
+                    <td style="vertical-align:middle;padding-right:10px;">
+                        <div style="font-size:34px;font-weight:bold;color:#E8500A;line-height:1;font-family:DejaVu Sans,sans-serif;">F</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                        <div style="font-size:17px;font-weight:bold;letter-spacing:0.28em;color:#1A1A1A;font-family:DejaVu Sans,sans-serif;">FERRO</div>
+                    </td>
+                </tr>
+            </table>
             <div class="muted" style="font-size:9px;margin-top:2px;letter-spacing:0.06em;">{{ $brandTagline }}</div>
         </td>
         <td width="52%" align="right">

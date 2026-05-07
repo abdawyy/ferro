@@ -88,7 +88,8 @@ class CheckoutOrderService
             $taxAmount = bcmul($afterDisc, self::TAX_RATE, $scale);
             $total = bcadd(bcadd($afterDisc, $shippingAmount, $scale), $taxAmount, $scale);
 
-            $orderCurrency = $lines[0]['product']->currency ?? $city->currency ?? 'EGP';
+            // Egypt COD storefront: persist EGP so receipts and mail show LE, not product ISO noise.
+            $orderCurrency = 'EGP';
 
             $fullName = trim($contact['first_name'].' '.$contact['last_name']);
             $cityLabelEn = $city->getTranslation('name', 'en', false) ?: (string) $city->name;

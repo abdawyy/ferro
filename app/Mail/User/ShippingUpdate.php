@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\URL;
 
 class ShippingUpdate extends Mailable
 {
@@ -32,6 +33,7 @@ class ShippingUpdate extends Mailable
                 'order'  => $this->order,
                 'locale' => $this->order->language,
                 'isRtl'  => $this->order->language === 'ar',
+                'trackingUrl' => URL::signedRoute('orders.track', ['order' => $this->order->id], now()->addYear()),
             ]
         );
     }

@@ -44,12 +44,7 @@
     </div>
     <div style="display: flex; gap: 12px; padding: 5px 0;">
         <span style="min-width: 140px; font-size: 11px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.1em;">{{ $t['ship_to'] }}</span>
-        <span style="font-size: 13px; color: #F5F2EE;">
-            {{ $order->shipping_address['name'] ?? $order->user?->name }},
-            {{ $order->shipping_address['address'] ?? '' }},
-            {{ $order->shipping_address['city'] ?? '' }},
-            {{ $order->shipping_address['country'] ?? '' }}
-        </span>
+        <span style="font-size: 13px; color: #F5F2EE;">{{ $order->shippingSummaryForMail() }}</span>
     </div>
 </div>
 
@@ -71,13 +66,15 @@
         <tr>
             <td style="text-align: {{ $align }};">
                 <div style="font-weight: 500;">{{ $item->product_name }}</div>
-                @if($item->variant)
-                <div style="font-size: 11px; color: #6B6B6B; margin-top: 2px;">{{ $item->variant }}</div>
+                @if($item->product_options)
+                    @foreach($item->product_options as $key => $val)
+                        <div style="font-size: 11px; color: #6B6B6B; margin-top: 2px;">{{ ucfirst((string) $key) }}: {{ $val }}</div>
+                    @endforeach
                 @endif
             </td>
             <td style="text-align: center;">{{ $item->quantity }}</td>
             <td style="text-align: right;">{{ ferro_money($item->unit_price, $order->currency) }}</td>
-            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
+            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->line_total, $order->currency) }}</td>
         </tr>
         @endforeach
     </tbody>
@@ -109,13 +106,13 @@
 
 {{-- Invoice Note --}}
 <div style="background-color: rgba(232,80,10,0.08); border: 1px solid rgba(232,80,10,0.2); border-radius: 2px; padding: 12px 16px; margin: 24px 0; font-size: 13px; color: #F5F2EE;">
-    📎 {{ $t['invoice_note'] }}
+    {{ $t['invoice_note'] }}
 </div>
 
 <hr class="email-divider">
 
 <div class="email-btn-center">
-    <a href="{{ route('orders.show', $order->id) }}" class="email-btn">{{ $t['track_cta'] }}</a>
+    <a href="{{ $trackingUrl }}" class="email-btn">{{ $t['track_cta'] }}</a>
 </div>
 
 <p class="email-text" style="text-align: center; margin-top: 16px;">

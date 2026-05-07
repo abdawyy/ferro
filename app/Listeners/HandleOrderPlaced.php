@@ -41,9 +41,7 @@ class HandleOrderPlaced
         }
 
         // Step 2 — Customer confirmation (localized)
-        $recipientEmail = $order->user?->email
-            ?? $order->lead?->email
-            ?? $order->billing_address['email'] ?? null;
+        $recipientEmail = $order->customerFacingEmail();
 
         if ($recipientEmail) {
             try {

@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Customer-facing money formatting (Egypt storefront: EGP label, no $).
+ * Customer-facing money formatting. Egypt storefront displays LE (livre / local).
  */
 final class Money
 {
@@ -12,9 +12,10 @@ final class Money
         $n = number_format((float) $amount, 2);
 
         return match (strtoupper((string) ($currency ?? 'EGP'))) {
-            'EGP', 'LE', 'USD' => $n.' EGP',
-            'AED' => $n.' AED',
-            default => $n.' '.strtoupper((string) $currency),
+            'EGP', 'LE' => "{$n} LE",
+            'USD' => "{$n} USD",
+            'AED' => "{$n} AED",
+            default => "{$n} ".strtoupper((string) $currency),
         };
     }
 }

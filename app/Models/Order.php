@@ -91,6 +91,45 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function returnRequests()
+    {
+        return $this->hasMany(OrderReturnRequest::class);
+    }
+
+    /**
+     * Email used for transactional messages (matches HandleOrderPlaced recipient logic).
+     */
+    public function customerFacingEmail(): ?string
+    {
+        return $this->user?->email
+            ?? $this->lead?->email
+            ?? ($this->billing_address['email'] ?? null)
+            ?? ($this->shipping_address['email'] ?? null);
+    }
+
+    /**
+     * Single-line shipping summary for emails (checkout uses address + name keys).
+     */
+    public function shippingSummaryForMail(): string
+    {
+        $s = $this->shipping_address ?? [];
+        $name = $s['name'] ?? trim(($s['first_name'] ?? '').' '.($s['last_name'] ?? ''));
+
+        $parts = array_filter([
+            $name !== '' ? $name : null,
+            $s['address'] ?? $s['address_line1'] ?? null,
+            $s['address_line2'] ?? null,
+            trim(implode(', ', array_filter([
+                $s['city'] ?? null,
+                $s['state'] ?? null,
+                $s['postal_code'] ?? $s['zip'] ?? null,
+                $s['country'] ?? null,
+            ]))),
+        ]);
+
+        return implode(', ', $parts);
+    }
+
     // ── Scopes ─────────────────────────────────────────────────────────────
     public function scopePaid($query)
     {

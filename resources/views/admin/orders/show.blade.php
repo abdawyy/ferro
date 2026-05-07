@@ -49,7 +49,7 @@
                         </td>
                         <td style="text-align:center;">{{ $item->quantity }}</td>
                         <td style="text-align:right;" class="mono">{{ ferro_money($item->unit_price, $order->currency) }}</td>
-                        <td style="text-align:right;" class="mono">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
+                        <td style="text-align:right;" class="mono">{{ ferro_money($item->line_total, $order->currency) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -142,6 +142,41 @@
                     </div>
                 </div>
                 @endif
+            </div>
+        </div>
+        @endif
+
+        @if($order->returnRequests->isNotEmpty())
+        <div class="admin-card">
+            <div class="admin-card-header"><h2 class="admin-card-title">Return requests</h2></div>
+            <div class="admin-card-body">
+                <p class="text-muted text-sm" style="margin-bottom: 14px;">
+                    Set status to <strong>Denied</strong> to reject a return. The customer sees this as “Denied” and any <strong>Admin notes</strong> you save are shown on their order page.
+                </p>
+                @foreach($order->returnRequests as $req)
+                    <div style="padding: 16px 0; border-bottom: 1px solid var(--admin-border);">
+                        <div class="text-muted text-sm" style="margin-bottom: 8px;">Submitted {{ $req->created_at->format('d M Y H:i') }}</div>
+                        <div style="margin-bottom: 8px;"><span class="badge {{ $req->status === 'rejected' ? 'badge-danger' : 'badge-info' }}" style="text-transform: capitalize;">{{ $req->status === 'rejected' ? 'Denied' : $req->status }}</span></div>
+                        <div style="font-size: 13px; margin-bottom: 12px; color: #C5C1BB;">{{ $req->customer_reason }}</div>
+                        <form method="POST" action="{{ route('admin.orders.return-requests.update', [$order, $req]) }}" class="stack-form">
+                            @csrf
+                            @method('PATCH')
+                            <div class="form-group">
+                                <label class="form-label" for="return_status_{{ $req->id }}">Status</label>
+                                <select id="return_status_{{ $req->id }}" name="status" class="form-input form-select" required>
+                                    @foreach(['pending' => 'Pending review', 'approved' => 'Approved', 'rejected' => 'Denied', 'completed' => 'Completed'] as $val => $lab)
+                                        <option value="{{ $val }}" @selected($req->status === $val)>{{ $lab }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="return_notes_{{ $req->id }}">Admin notes (customer may be contacted by email separately)</label>
+                                <textarea id="return_notes_{{ $req->id }}" name="admin_notes" class="form-input form-textarea" style="min-height: 70px;">{{ old('admin_notes', $req->admin_notes) }}</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-secondary btn-sm">Update return</button>
+                        </form>
+                    </div>
+                @endforeach
             </div>
         </div>
         @endif

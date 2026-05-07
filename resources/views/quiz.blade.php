@@ -1,13 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('quiz');
+@endphp
 
-@section('seo_title', $isAr
-    ? 'اختبار البشرة — اكتشف روتين فيرو المثالي لك'
-    : 'Skin Quiz — Discover Your Perfect FERRO Routine')
-@section('seo_description', $isAr
-    ? 'أجب على ٥ أسئلة واحصل على توصيات فيرو المخصصة لنوع بشرتك ونمط حياتك.'
-    : 'Answer 5 questions and receive personalized FERRO product recommendations tailored to your skin type and lifestyle.')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 

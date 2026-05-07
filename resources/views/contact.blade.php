@@ -1,13 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('contact');
+@endphp
 
-@section('seo_title', $isAr
-    ? 'تواصل معنا — فيرو'
-    : 'Contact Us — FERRO')
-@section('seo_description', $isAr
-    ? 'تواصل مع فريق فيرو لأي استفسارات حول منتجاتنا أو طلباتك.'
-    : 'Get in touch with the FERRO team for product inquiries, order support, or partnership opportunities.')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 

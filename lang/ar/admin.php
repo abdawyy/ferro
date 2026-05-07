@@ -13,6 +13,7 @@ return [
         'shipping_eg' => 'الشحن (مصر)',
         'storefront_contact' => 'بيانات التواصل للمتجر',
         'storefront_pages' => 'صفحات المتجر',
+        'storefront_seo' => 'SEO المتجر',
         'orders' => 'الطلبات',
         'users' => 'المستخدمون',
         'administrators' => 'المديرون',
@@ -105,5 +106,19 @@ return [
         'show_on_storefront' => 'عرض :network في المتجر',
         'heading_label' => 'العنوان (اختياري)',
         'body_label' => 'السطر في صفحة التواصل',
+    ],
+
+    'storefront_seo' => [
+        'title' => 'SEO الواجهة العامة',
+        'intro' => 'تحكّم في عناوين ووصوفات وكلمات البحث لصفحات العملاء والصفحات الأساسية. اترك الحقول فارغة لاستخدام الافتراضيات. لصفحات تفاصيل الطلب والتتبع يمكنك استخدام العنصر النائب :order_number في أي حقل.',
+        'placeholder_hint' => 'تدعم هذه الصفحة العنصر النائب',
+        'meta_title_en' => 'عنوان الميتا (إنجليزي)',
+        'meta_title_ar' => 'عنوان الميتا (عربي)',
+        'meta_description_en' => 'وصف الميتا (إنجليزي)',
+        'meta_description_ar' => 'وصف الميتا (عربي)',
+        'meta_keywords_en' => 'كلمات مفتاحية (إنجليزي)',
+        'meta_keywords_ar' => 'كلمات مفتاحية (عربي)',
+        'save' => 'حفظ كل حقول SEO',
+        'saved' => 'تم حفظ إعدادات SEO.',
     ],
 ];

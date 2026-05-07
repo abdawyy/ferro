@@ -13,6 +13,7 @@ return [
         'shipping_eg' => 'Shipping (EG)',
         'storefront_contact' => 'Storefront contact',
         'storefront_pages' => 'Storefront pages',
+        'storefront_seo' => 'Storefront SEO',
         'orders' => 'Orders',
         'users' => 'Users',
         'administrators' => 'Administrators',
@@ -105,5 +106,19 @@ return [
         'show_on_storefront' => 'Show :network on storefront',
         'heading_label' => 'Heading (optional)',
         'body_label' => 'Line shown on contact page',
+    ],
+
+    'storefront_seo' => [
+        'title' => 'Storefront SEO',
+        'intro' => 'Control meta titles, descriptions, and keywords for customer and main public pages. Leave fields empty to use the built-in defaults. For order detail and tracking pages you may use the placeholder :order_number in any field.',
+        'placeholder_hint' => 'This page supports the placeholder',
+        'meta_title_en' => 'Meta title (EN)',
+        'meta_title_ar' => 'Meta title (AR)',
+        'meta_description_en' => 'Meta description (EN)',
+        'meta_description_ar' => 'Meta description (AR)',
+        'meta_keywords_en' => 'Meta keywords (EN)',
+        'meta_keywords_ar' => 'Meta keywords (AR)',
+        'save' => 'Save all SEO fields',
+        'saved' => 'Storefront SEO settings saved.',
     ],
 ];

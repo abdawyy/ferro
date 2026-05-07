@@ -9,10 +9,14 @@
     $active = request('category', '');
     $status = request('status', '');
     $q      = request('q', '');
+    $seo    = ferro_storefront_seo('shop');
 @endphp
 
-@section('seo_title',       $isAr ? 'المتجر — FERRO' : 'Shop — FERRO')
-@section('seo_description', $isAr ? 'تسوّق منتجات العناية الفاخرة المصممة للرجل عالي الأداء.' : 'Shop premium luxury grooming essentials engineered for the high-performance man.')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @push('head')
 <style>

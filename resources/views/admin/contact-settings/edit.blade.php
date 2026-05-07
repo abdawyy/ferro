@@ -2,7 +2,9 @@
 
 @section('title', __('admin.contact_settings.title'))
 @section('page_title', __('admin.contact_settings.title'))
-@section('breadcrumb', 'Admin / '.__('admin.contact_settings.title'))
+@section('breadcrumb')
+    Admin / {{ __('admin.contact_settings.title') }}
+@endsection
 
 @section('content')
 

@@ -1,10 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('account_order', ['order_number' => $order->order_number]);
+@endphp
 
-@section('seo_title', $isAr
-    ? 'تفاصيل الطلب #' . $order->order_number . ' — فيرو'
-    : 'Order #' . $order->order_number . ' — FERRO')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 
@@ -37,9 +42,10 @@
                               'bg-green-500/10 text-green-400 border-green-500/30'   => $order->status === 'delivered',
                               'bg-blue-500/10 text-blue-400 border-blue-500/30'      => $order->status === 'shipped',
                               'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'=> $order->status === 'processing',
-                              'bg-ferro-carbon text-ferro-ash border-ferro-carbon'   => $order->status === 'pending',
+                              'bg-red-500/10 text-red-300 border-red-500/30'       => in_array($order->status, ['cancelled', 'refunded'], true),
+                              'bg-ferro-carbon text-ferro-ash border-ferro-carbon'   => in_array($order->status, ['pending_payment', 'confirmed'], true),
                           ])>
-                        {{ ucfirst($order->status) }}
+                        {{ $order->status_label }}
                     </span>
                     @if($order->invoice_pdf_path)
                         <a href="{{ route('invoices.download', $order->order_number) }}"
@@ -57,11 +63,37 @@
 
     <div class="container-ferro section-pad">
 
+        @if(session('success'))
+            <div class="mb-6 p-4 border border-green-500/30 bg-green-500/5 text-green-200 text-body-sm rounded-sm"
+                 role="status">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="mb-6 p-4 border border-red-500/30 bg-red-500/5 text-red-200 text-body-sm rounded-sm"
+                 role="alert">{{ session('error') }}</div>
+        @endif
+
         {{-- Order status timeline --}}
         @php
-            $statuses    = ['pending', 'processing', 'shipped', 'delivered'];
-            $currentStep = array_search($order->status, $statuses) !== false ? array_search($order->status, $statuses) : 0;
+            $terminal = in_array($order->status, ['cancelled', 'refunded'], true);
+            $stepMap = [
+                'pending_payment' => 0,
+                'confirmed' => 0,
+                'processing' => 1,
+                'shipped' => 2,
+                'delivered' => 3,
+            ];
+            $statuses = ['confirmed', 'processing', 'shipped', 'delivered'];
+            $labelsEn = ['Confirmed', 'Processing', 'Shipped', 'Delivered'];
+            $labelsAr = ['مؤكد', 'قيد المعالجة', 'تم الشحن', 'تم التسليم'];
+            $currentStep = $terminal ? -1 : ($stepMap[$order->status] ?? 0);
         @endphp
+        @if($terminal)
+            <div class="mb-12 p-5 border border-ferro-carbon bg-ferro-obsidian text-ferro-silver text-body-sm rounded-sm {{ $isAr ? 'text-right' : '' }}">
+                {{ $isAr
+                    ? 'هذا الطلب أُغلق ولا يخضع لمخطط التتبع القياسي.'
+                    : 'This order is closed and is not shown on the standard fulfillment timeline.' }}
+            </div>
+        @else
         <div class="mb-12 overflow-x-auto">
             <div class="flex items-center min-w-[400px]">
                 @foreach($statuses as $i => $status)
@@ -77,11 +109,7 @@
                             @endif
                         </div>
                         <span class="text-[11px] mt-2 text-center capitalize {{ $i <= $currentStep ? 'text-ferro-white' : 'text-ferro-ash' }}">
-                            @if($isAr)
-                                {{ ['معلق', 'قيد المعالجة', 'تم الشحن', 'تم التسليم'][$i] }}
-                            @else
-                                {{ ucfirst($status) }}
-                            @endif
+                            {{ $isAr ? ($labelsAr[$i] ?? $status) : ($labelsEn[$i] ?? $status) }}
                         </span>
                     </div>
                     @if(!$loop->last)
@@ -90,6 +118,103 @@
                 @endforeach
             </div>
         </div>
+        @endif
+
+        @php
+            $canCancel = in_array($order->status, [\App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_CONFIRMED, \App\Models\Order::STATUS_PROCESSING], true);
+            $canReturn = $order->status === \App\Models\Order::STATUS_DELIVERED;
+        @endphp
+
+        @if($canCancel || $canReturn || $order->returnRequests->isNotEmpty())
+        <div class="mb-10 space-y-6 {{ $isAr ? 'text-right' : '' }}">
+            @if($canCancel)
+                <form method="POST" action="{{ route('orders.cancel', $order->order_number) }}"
+                      onsubmit="return confirm({{ json_encode($isAr ? 'إلغاء هذا الطلب؟ لا يمكن التراجع.' : 'Cancel this order? This cannot be undone.') }});"
+                      class="flex flex-wrap items-center gap-4 {{ $isAr ? 'flex-row-reverse' : '' }}">
+                    @csrf
+                    <p class="text-ferro-ash text-body-sm flex-1 min-w-[200px]">
+                        {{ $isAr
+                            ? 'يمكنك إلغاء الطلب قبل الشحن. بعد الإلغاء سيصلك بريد بتأكيد الحالة.'
+                            : 'You can cancel before the order ships. We will email you to confirm the cancellation.' }}
+                    </p>
+                    <button type="submit" class="btn-secondary clip-luxury-md text-xs">
+                        {{ $isAr ? 'إلغاء الطلب' : 'Cancel order' }}
+                    </button>
+                </form>
+            @endif
+
+            @if($canReturn)
+                <div class="border border-ferro-carbon bg-ferro-obsidian p-6 rounded-sm">
+                    <h2 class="font-display text-lg text-ferro-white mb-3">{{ $isAr ? 'طلب إرجاع' : 'Request a return' }}</h2>
+                    <p class="text-ferro-ash text-body-sm mb-4">
+                        {{ $isAr
+                            ? 'صف سبب الإرجاع. سيراجع الفريق طلبك ويتواصل معك عبر البريد.'
+                            : 'Describe why you would like to return this order. Our team will review and follow up by email.' }}
+                    </p>
+                    <form method="POST" action="{{ route('orders.return-request', $order->order_number) }}" class="space-y-4">
+                        @csrf
+                        <textarea name="customer_reason" rows="4" required
+                                  class="w-full bg-ferro-black border border-ferro-carbon text-ferro-white text-body-sm p-3 rounded-sm"
+                                  placeholder="{{ $isAr ? 'السبب…' : 'Reason for return…' }}">{{ old('customer_reason') }}</textarea>
+                        <p class="text-ferro-ash text-xs">
+                            {{ $isAr ? 'تعرّف على' : 'See our' }}
+                            <a href="{{ route('legal.returns') }}" class="text-ferro-orange hover:underline">{{ $isAr ? 'سياسة الإرجاع' : 'return policy' }}</a>.
+                        </p>
+                        <button type="submit" class="btn-primary clip-luxury-md text-sm">
+                            {{ $isAr ? 'إرسال الطلب' : 'Submit return request' }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            @if($order->returnRequests->isNotEmpty())
+                <div>
+                    <h3 class="text-ferro-white font-display text-base mb-3">{{ $isAr ? 'طلبات الإرجاع' : 'Return requests' }}</h3>
+                    <ul class="space-y-3">
+                        @foreach($order->returnRequests as $req)
+                            @php
+                                $isDenied = $req->status === \App\Models\OrderReturnRequest::STATUS_REJECTED;
+                                $statusLabel = match ($req->status) {
+                                    \App\Models\OrderReturnRequest::STATUS_PENDING => $isAr ? 'قيد المراجعة' : 'Pending review',
+                                    \App\Models\OrderReturnRequest::STATUS_APPROVED => $isAr ? 'تمت الموافقة' : 'Approved',
+                                    \App\Models\OrderReturnRequest::STATUS_REJECTED => $isAr ? 'مرفوض' : 'Denied',
+                                    \App\Models\OrderReturnRequest::STATUS_COMPLETED => $isAr ? 'مكتمل' : 'Completed',
+                                    default => $req->status,
+                                };
+                            @endphp
+                            <li @class([
+                                'border p-4 rounded-sm text-body-sm',
+                                'border-red-500/40 bg-red-500/5 text-ferro-silver' => $isDenied,
+                                'border-ferro-carbon text-ferro-silver' => ! $isDenied,
+                            ])>
+                                <span @class([
+                                    'uppercase text-xs tracking-widest',
+                                    'text-red-400' => $isDenied,
+                                    'text-ferro-orange' => ! $isDenied,
+                                ])>{{ $statusLabel }}</span>
+                                <span class="text-ferro-ash text-xs mx-2">·</span>
+                                {{ $req->created_at->format('d M Y') }}
+                                <p class="text-ferro-silver mt-2">{{ $req->customer_reason }}</p>
+                                @if($isDenied)
+                                    <p class="text-red-300/90 text-body-sm mt-3 font-medium">
+                                        {{ $isAr
+                                            ? 'لم يُعتمد طلب الإرجاع. يمكنك مراجعة السبب أدناه أو التواصل مع الدعم.'
+                                            : 'This return request was not approved. See the note below or contact support if you have questions.' }}
+                                    </p>
+                                @endif
+                                @if($req->admin_notes)
+                                    <p class="text-ferro-ash text-xs mt-2">
+                                        <span class="font-semibold text-ferro-silver">{{ $isAr ? 'ملاحظات فريق فيرو:' : 'FERRO team note:' }}</span>
+                                        {{ $req->admin_notes }}
+                                    </p>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
+        @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
@@ -121,7 +246,7 @@
                             </div>
                             <div class="text-right {{ $isAr ? 'text-left' : '' }}">
                                 <p class="text-ferro-white font-semibold">
-                                    {{ ferro_money($item->unit_price * $item->quantity, $item->currency ?? $order->currency) }}
+                                    {{ ferro_money($item->line_total, $order->currency) }}
                                 </p>
                             </div>
                         </div>

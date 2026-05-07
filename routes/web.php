@@ -13,7 +13,7 @@
 //   /cart                 Cart
 //   /checkout             Checkout funnel (3 steps: info → shipping → payment)
 //   /account              Customer account (orders, subscriptions, loyalty)
-//   /orders/{number}      Order status tracking
+//   /orders/track/{order} Signed order status (from emails)
 //   /invoices/{number}    Invoice download
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -30,9 +30,11 @@ use App\Http\Controllers\CheckoutOrderController;
 use App\Http\Controllers\CheckoutPageController;
 use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\ContactPageController;
+use App\Http\Controllers\CustomerOrderActionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\ProductController;
 use App\Models\Order;
 use App\Services\InvoiceService;
@@ -80,6 +82,10 @@ Route::get('/order/thanks/{order}', [CheckoutOrderController::class, 'thanks'])
     ->middleware('signed')
     ->name('order.thanks');
 
+Route::get('/orders/track/{order}', [OrderTrackingController::class, 'show'])
+    ->middleware('signed')
+    ->name('orders.track');
+
 Route::prefix('api')->group(function () {
     Route::get('/cart/count', [CartController::class, 'count'])->name('api.cart.count');
     Route::post('/cart/add', [CartController::class, 'add'])->name('api.cart.add');
@@ -124,11 +130,20 @@ Route::middleware(['auth'])->group(function () {
 
         return view('account.index', compact('orders'));
     })->name('account');
-    Route::get('/orders/{orderNumber}', fn (string $orderNumber) => view('account.order', [
-        'order' => Order::where('order_number', $orderNumber)
+    Route::get('/orders/{orderNumber}', function (string $orderNumber) {
+        $order = Order::query()
+            ->where('order_number', $orderNumber)
             ->where('user_id', auth()->id())
-            ->firstOrFail(),
-    ]))->name('orders.show');
+            ->with(['items.product', 'returnRequests'])
+            ->firstOrFail();
+
+        return view('account.order', compact('order'));
+    })->name('orders.show');
+
+    Route::post('/orders/{orderNumber}/cancel', [CustomerOrderActionController::class, 'cancel'])
+        ->name('orders.cancel');
+    Route::post('/orders/{orderNumber}/return-request', [CustomerOrderActionController::class, 'requestReturn'])
+        ->name('orders.return-request');
 
     // Invoice PDF download (always regenerates so the latest template is used)
     Route::get('/invoices/{orderNumber}', function (string $orderNumber) {
@@ -139,7 +154,7 @@ Route::middleware(['auth'])->group(function () {
         try {
             app(InvoiceService::class)->generate($order->fresh(['items', 'user', 'lead']));
             $order->refresh();
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             abort(503, 'Invoice is not available yet. Please try again later.');
         }
 
@@ -178,6 +193,9 @@ Route::middleware(['auth', 'admin'])
         Route::get('contact-settings/edit', [Admin\ContactSettingController::class, 'edit'])->name('contact-settings.edit');
         Route::put('contact-settings', [Admin\ContactSettingController::class, 'update'])->name('contact-settings.update');
 
+        Route::get('storefront-seo', [Admin\StorefrontSeoController::class, 'edit'])->name('storefront-seo.edit');
+        Route::put('storefront-seo', [Admin\StorefrontSeoController::class, 'update'])->name('storefront-seo.update');
+
         Route::resource('pages', Admin\PageController::class)->except(['show']);
         Route::post('products/{product}/images', [Admin\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('products/{product}/images/{index}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
@@ -186,6 +204,8 @@ Route::middleware(['auth', 'admin'])
         Route::get('orders', [Admin\OrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order}/status', [Admin\OrderController::class, 'updateStatus'])->name('orders.status');
+        Route::patch('orders/{order}/return-requests/{returnRequest}', [Admin\OrderController::class, 'updateReturnRequest'])
+            ->name('orders.return-requests.update');
         Route::get('orders/{order}/invoice', [Admin\OrderController::class, 'downloadInvoice'])->name('orders.invoice');
 
         // Users

@@ -13,9 +13,7 @@ class HandleOrderShipped
     {
         $order = $event->order->load(['items', 'user', 'lead']);
 
-        $recipientEmail = $order->user?->email
-            ?? $order->lead?->email
-            ?? $order->billing_address['email'] ?? null;
+        $recipientEmail = $order->customerFacingEmail();
 
         if (! $recipientEmail) {
             return;

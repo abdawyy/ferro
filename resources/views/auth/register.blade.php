@@ -1,8 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('auth_register');
+@endphp
 
-@section('seo_title', $isAr ? 'إنشاء حساب — فيرو' : 'Create Account — FERRO')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 

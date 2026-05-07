@@ -1,8 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('order_thanks');
+@endphp
 
-@section('seo_title', $isAr ? 'شكراً لطلبك — فيرو' : 'Thank You — FERRO')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 <div class="pt-[72px] min-h-screen bg-ferro-black">
@@ -22,7 +29,6 @@
             <p class="text-ferro-silver text-sm mt-4">
                 {{ $isAr ? 'الإجمالي' : 'Total' }}:
                 <span class="text-ferro-white font-semibold">{{ ferro_money($order->total, $order->currency) }}</span>
-                {{ strtoupper($order->currency) }}
             </p>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 {{ $isAr ? 'sm:flex-row-reverse' : '' }}">

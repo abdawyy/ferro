@@ -56,3 +56,16 @@ if (! function_exists('ferro_money')) {
         return Money::format($amount, $currency);
     }
 }
+
+if (! function_exists('ferro_storefront_seo')) {
+    /**
+     * Meta tags for storefront pages (admin-overridable via storefront_seo_pages).
+     *
+     * @param  array<string, string|int|float>  $replacements
+     * @return array{title: string, description: string, keywords: string, og_title: string, og_description: string}
+     */
+    function ferro_storefront_seo(string $pageKey, array $replacements = []): array
+    {
+        return app(\App\Services\StorefrontSeoService::class)->forPage($pageKey, $replacements);
+    }
+}

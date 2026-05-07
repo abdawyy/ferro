@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Events\OrderShipped;
+use App\Events\OrderStatusChanged;
+use App\Models\OrderReturnRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -52,7 +55,7 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(['user', 'lead', 'items.product']);
+        $order->load(['user', 'lead', 'items.product', 'returnRequests']);
 
         return view('admin.orders.show', compact('order'));
     }
@@ -89,6 +92,10 @@ class OrderController extends Controller
         $order->update($data);
         $order->refresh();
 
+        if ($previousStatus !== $data['status']) {
+            event(new OrderStatusChanged($order->fresh(['items', 'user', 'lead']), $previousStatus, $data['status']));
+        }
+
         if ($data['status'] === 'shipped' && $previousStatus !== 'shipped') {
             OrderShipped::dispatch(
                 $order,
@@ -120,5 +127,26 @@ class OrderController extends Controller
             "FERRO_Invoice_{$order->invoice_number}.pdf",
             ['Content-Type' => 'application/pdf']
         );
+    }
+
+    public function updateReturnRequest(Request $request, Order $order, OrderReturnRequest $returnRequest): RedirectResponse
+    {
+        if ($returnRequest->order_id !== $order->id) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'status' => ['required', Rule::in([
+                OrderReturnRequest::STATUS_PENDING,
+                OrderReturnRequest::STATUS_APPROVED,
+                OrderReturnRequest::STATUS_REJECTED,
+                OrderReturnRequest::STATUS_COMPLETED,
+            ])],
+            'admin_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $returnRequest->update($data);
+
+        return back()->with('success', 'Return request updated.');
     }
 }

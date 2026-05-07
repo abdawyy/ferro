@@ -5,12 +5,26 @@
 
 @section('email_body')
 
-<p class="email-heading">🛒 New Order Received</p>
-<p class="email-subheading">{{ $order->created_at->format('d F Y — H:i') }} UTC</p>
+@php
+    $custEmail = $order->user->email
+        ?? $order->lead?->email
+        ?? ($order->billing_address['email'] ?? null)
+        ?? ($order->shipping_address['email'] ?? null)
+        ?? 'N/A';
+    $badgeClass = match ($order->status) {
+        \App\Models\Order::STATUS_PENDING => 'badge-warning',
+        \App\Models\Order::STATUS_CANCELLED, \App\Models\Order::STATUS_REFUNDED => 'badge-danger',
+        default => 'badge-success',
+    };
+    $created = $order->created_at->timezone(config('app.timezone'))->format('d F Y — H:i (T)');
+@endphp
 
-{{-- Status + Priority --}}
+<p class="email-heading">New order received</p>
+<p class="email-subheading">{{ $created }}</p>
+
+{{-- Status --}}
 <div style="margin-bottom: 24px;">
-    <span class="status-badge badge-success">ORDER CONFIRMED</span>
+    <span class="status-badge {{ $badgeClass }}">{{ strtoupper(str_replace('_', ' ', $order->status)) }}</span>
     <span style="margin-left: 8px; font-size: 13px; color: #6B6B6B;">#{{ $order->order_number }}</span>
 </div>
 
@@ -35,7 +49,7 @@
     <dl style="margin: 0;">
         @foreach([
             ['label' => 'Customer', 'value' => $order->user->name ?? 'Guest', 'bold' => true],
-            ['label' => 'Email',    'value' => $order->user->email ?? ($order->shipping_address['email'] ?? 'N/A')],
+            ['label' => 'Email',    'value' => $custEmail],
             ['label' => 'Ship To',  'value' => implode(', ', array_filter([$order->shipping_address['address'] ?? null, $order->shipping_address['city'] ?? null, $order->shipping_address['country'] ?? null]))],
         ] as $row)
         <div style="display: flex; gap: 12px; padding: 4px 0;">
@@ -69,7 +83,7 @@
             <td style="color: #6B6B6B; font-size: 11px; font-family: monospace;">{{ $item->product?->sku ?? '—' }}</td>
             <td style="text-align: center;">{{ $item->quantity }}</td>
             <td style="text-align: right;">{{ ferro_money($item->unit_price, $order->currency) }}</td>
-            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->unit_price * $item->quantity, $order->currency) }}</td>
+            <td style="text-align: right; font-weight: 600;">{{ ferro_money($item->line_total, $order->currency) }}</td>
         </tr>
         @endforeach
     </tbody>

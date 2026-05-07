@@ -1,13 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('about');
+@endphp
 
-@section('seo_title', $isAr
-    ? 'قصتنا — فيرو | مصنوع من الحديد، مصقول بالرفاهية'
-    : 'Our Story — FERRO | Forged from Iron, Polished by Luxury')
-@section('seo_description', $isAr
-    ? 'فيرو وُلد لسد فراغ في سوق العناية للرجل عالي الأداء. اكتشف مهمتنا وقيمنا.'
-    : 'FERRO was born to fill a void in the market for the high-performance man. Discover our mission, values, and the story behind the brand.')
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 
 @section('content')
 

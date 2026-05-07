@@ -1,16 +1,15 @@
 @extends('layouts.app')
 
-@php $isAr = app()->getLocale() === 'ar'; @endphp
-
-{{-- ── SEO Meta ──────────────────────────────────────────────────────────── --}}
 @php
-    $seoTitle       = $isAr ? 'فيرو — مصنوع من الحديد، مصقول بالرفاهية | عناية الرجل الفاخرة' : 'FERRO — Forged from Iron, Polished by Luxury | Premium Men\'s Grooming';
-    $seoDescription = $isAr ? 'منتجات عناية فاخرة للرجال والرياضيين النخبة. طبيعية. قوية. لا تهادن.' : 'Premium nature-powered grooming essentials engineered for the high-performance man and elite athlete. Natural. Powerful. Uncompromising.';
+    $isAr = app()->getLocale() === 'ar';
+    $seo = ferro_storefront_seo('home');
 @endphp
-@section('seo_title', $seoTitle)
-@section('seo_description', $seoDescription)
-@section('og_title', 'FERRO — Forged from Iron, Polished by Luxury')
-@section('og_description', 'Premium natural grooming engineered for the elite athlete.')
+{{-- ── SEO Meta ──────────────────────────────────────────────────────────── --}}
+@section('seo_title', $seo['title'])
+@section('seo_description', $seo['description'])
+@section('seo_keywords', $seo['keywords'])
+@section('og_title', $seo['og_title'])
+@section('og_description', $seo['og_description'])
 @section('og_type', 'website')
 
 @section('schema_org')
