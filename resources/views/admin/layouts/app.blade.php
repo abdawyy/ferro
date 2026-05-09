@@ -493,6 +493,8 @@
             }
         }
     </style>
+       <link rel="stylesheet" href="{{ asset('build/assets/app-CnFwdGPi.css') }}">
+<script type="module" src="{{ asset('build/assets/app-BaDZgPgy.js') }}"></script>
 
     <style>[x-cloak]{display:none!important;}</style>
     @stack('head')
