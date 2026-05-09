@@ -45,13 +45,13 @@
                             <p class="text-ferro-ash text-xs mt-0.5" x-text="item.category"></p>
 
                             {{-- Qty + Price row --}}
-                            <div class="flex items-center justify-between mt-4 gap-4 {{ $isAr ? 'flex-row-reverse' : '' }}">
-                                <div class="qty-stepper">
+                            <div class="cart-item-qty-row flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 gap-3 sm:gap-4 {{ $isAr ? 'sm:flex-row-reverse' : '' }}">
+                                <div class="qty-stepper cart-item-qty-stepper">
                                     <button @click="updateQty(item.id, item.qty - 1)" type="button" aria-label="{{ $isAr ? 'تقليل' : 'Decrease' }}">−</button>
                                     <input type="number" x-model.number="item.qty" @change="updateQty(item.id, item.qty)" min="1" max="10">
                                     <button @click="updateQty(item.id, item.qty + 1)" type="button" aria-label="{{ $isAr ? 'زيادة' : 'Increase' }}">+</button>
                                 </div>
-                                <div class="text-right {{ $isAr ? 'text-left' : '' }}">
+                                <div class="text-right w-full sm:w-auto {{ $isAr ? 'text-left' : '' }}">
                                     <span class="text-ferro-white font-semibold" x-text="formatPrice(item.price * item.qty)"></span>
                                     <span class="text-ferro-ash text-xs block" x-text="formatPrice(item.price) + ' {{ $isAr ? 'للقطعة' : 'each' }}'"></span>
                                 </div>

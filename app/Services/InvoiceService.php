@@ -4,8 +4,11 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
+use Mpdf\Mpdf;
+use Mpdf\Config\ConfigVariables;
+use Mpdf\Config\FontVariables;
 
 /**
  * FERRO InvoiceService
@@ -38,21 +41,34 @@ class InvoiceService
         // 2. Validate arithmetic — throws on discrepancy
         $this->validateTotals($order);
 
-        // 3. English-only PDF (DomPDF Arabic/RTL is unreliable across viewers)
+        // 3. Build localized invoice view data (English / Arabic)
         $data = $this->buildInvoiceViewData($order);
 
-        // 4. Render PDF via DomPDF (uses Blade view)
-        $pdf = Pdf::loadView('pdf.invoice', $data)
-                  ->setPaper('a4', 'portrait')
-                  ->setOption('dpi', 150)
-                  ->setOption('defaultFont', 'DejaVu Sans');
+        // 4. Render HTML via Blade
+        $html = View::make('pdf.invoice', $data)->render();
 
-        // 5. Store PDF
+        // 5. Generate PDF with mPDF (full Arabic/RTL + bidi support)
+        $mpdf = new Mpdf([
+            'mode'          => 'utf-8',
+            'format'        => 'A4',
+            'orientation'   => 'P',
+            'margin_top'    => 10,
+            'margin_right'  => 10,
+            'margin_bottom' => 10,
+            'margin_left'   => 10,
+            'autoArabic'    => true,
+            'baseBasePath'  => public_path(),
+        ]);
+        $mpdf->autoArabic   = true;
+        $mpdf->autoLangToFont = true;
+        $mpdf->WriteHTML($html);
+
+        // 6. Store PDF
         $invoiceNumber = $order->invoice_number ?? $this->generateInvoiceNumber($order);
         $filename      = "invoice_{$invoiceNumber}.pdf";
         $path          = "invoices/{$filename}";
 
-        Storage::disk('local')->put($path, $pdf->output());
+        Storage::disk('local')->put($path, $mpdf->Output('', 'S'));
 
         // 6. Persist reference to invoice
         $order->update([
@@ -148,37 +164,69 @@ class InvoiceService
     }
 
     /**
-     * Build view data for the English invoice PDF.
+     * Build view data for the invoice PDF.
      */
     private function buildInvoiceViewData(Order $order): array
     {
+        // mPDF handles Arabic bidi natively — plain strings work.
+        $bi = fn (string $en, string $ar): string => $en . ' / ' . $ar;
+
         return [
             'order'                => $order,
             'items'                => $order->items,
-            'brandTagline'         => 'Forged from Iron — Polished by Luxury',
-            'invoiceLabel'         => 'INVOICE',
-            'billingLabel'         => 'BILL TO',
-            'shippingLabel'        => 'SHIP TO',
-            'subtotalLabel'        => 'Subtotal',
-            'discountLabel'        => 'Discount',
-            'shippingLabel2'       => 'Shipping',
-            'taxLabel'             => 'Tax',
-            'totalLabel'           => 'Total',
-            'thankYouLabel'        => 'Thank you for choosing FERRO',
+            'isArabic'             => false,
+            'langCode'             => 'en',
+            'brandTagline'         => $bi('Forged from Iron - Polished by Luxury', 'مصقول بالفخامة - مطروق من الحديد'),
+            'invoiceLabel'         => $bi('INVOICE', 'فاتورة'),
+            'billingLabel'         => $bi('BILL TO', 'بيانات الفاتورة'),
+            'shippingLabel'        => $bi('SHIP TO', 'عنوان الشحن'),
+            'subtotalLabel'        => $bi('Subtotal', 'المجموع الفرعي'),
+            'discountLabel'        => $bi('Discount', 'الخصم'),
+            'shippingLabel2'       => $bi('Shipping', 'الشحن'),
+            'taxLabel'             => $bi('Tax', 'الضريبة'),
+            'totalLabel'           => $bi('Total', 'الإجمالي'),
+            'thankYouLabel'        => $bi('Thank you for choosing FERRO', 'شكرا لاختيارك FERRO'),
             'generatedAt'          => now()->format('d M Y'),
             'orderDateFormatted'   => $order->created_at->format('d M Y'),
-            'orderNumberLabel'     => 'Order number',
-            'orderDateLabel'       => 'Order date',
-            'paymentMethodLabel'   => 'Payment method',
-            'paymentStatusLabel'   => 'Payment status',
-            'paymentMethodDisplay' => $this->paymentMethodLabel($order->payment_method),
-            'paymentStatusDisplay' => $this->paymentStatusLabel($order->payment_status),
+            'orderNumberLabel'     => $bi('Order number', 'رقم الطلب'),
+            'orderDateLabel'       => $bi('Order date', 'تاريخ الطلب'),
+            'paymentMethodLabel'   => $bi('Payment method', 'طريقة الدفع'),
+            'paymentStatusLabel'   => $bi('Payment status', 'حالة الدفع'),
+            'productLabel'         => $bi('Product', 'المنتج'),
+            'unitPriceLabel'       => $bi('Unit price', 'سعر الوحدة'),
+            'qtyLabel'             => $bi('Qty', 'الكمية'),
+            'lineTotalLabel'       => $bi('Line total', 'إجمالي السطر'),
+            'skuLabel'             => $bi('SKU', 'رمز المنتج'),
+            'shippingFreeLabel'    => $bi('Free', 'مجاني'),
+            'invoiceValidityNote'  => $bi(
+                'This invoice is electronically generated and valid without a signature.',
+                'تم إنشاء هذه الفاتورة إلكترونيا وهي صالحة بدون توقيع.'
+            ),
+            'paymentMethodDisplay' => $bi(
+                $this->paymentMethodLabel($order->payment_method, false),
+                $this->paymentMethodLabel($order->payment_method, true)
+            ),
+            'paymentStatusDisplay' => $bi(
+                $this->paymentStatusLabel($order->payment_status, false),
+                $this->paymentStatusLabel($order->payment_status, true)
+            ),
         ];
     }
 
-    private function paymentMethodLabel(?string $method): string
+    private function paymentMethodLabel(?string $method, bool $isArabic = false): string
     {
         $m = strtolower((string) $method);
+
+        if ($isArabic) {
+            return match ($m) {
+                'cash_on_delivery', 'cod' => 'الدفع عند الاستلام',
+                'visa', 'card', 'credit_card' => 'بطاقة',
+                'fawry' => 'فوري',
+                'apple_pay' => 'Apple Pay',
+                'mada' => 'مدى',
+                default => $method ? $method : 'غير متوفر',
+            };
+        }
 
         return match ($m) {
             'cash_on_delivery', 'cod' => 'Cash on delivery',
@@ -190,9 +238,20 @@ class InvoiceService
         };
     }
 
-    private function paymentStatusLabel(?string $status): string
+    private function paymentStatusLabel(?string $status, bool $isArabic = false): string
     {
         $s = strtolower((string) $status);
+
+        if ($isArabic) {
+            return match ($s) {
+                'paid' => 'مدفوع',
+                'unpaid' => 'غير مدفوع',
+                'pending' => 'قيد الانتظار',
+                'refunded' => 'مسترد',
+                'partially_refunded' => 'استرداد جزئي',
+                default => $status ? $status : 'غير متوفر',
+            };
+        }
 
         return match ($s) {
             'paid' => 'Paid',

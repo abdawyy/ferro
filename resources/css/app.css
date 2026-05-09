@@ -458,6 +458,29 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
     }
 }
 
+@media (max-width: 640px) {
+    .cart-item-qty-row {
+        align-items: stretch;
+    }
+
+    .cart-item-qty-stepper {
+        width: fit-content;
+    }
+
+    .cart-item-qty-stepper button {
+        width: 2.75rem;
+        min-height: 2.5rem;
+        font-size: 1.25rem;
+    }
+
+    .cart-item-qty-stepper input[type="number"] {
+        width: 3.5rem;
+        min-width: 3.5rem;
+        min-height: 2.5rem;
+        font-size: 1rem;
+    }
+}
+
 @utility form-label {
     display: block;
     font-size: 0.75rem;

@@ -96,10 +96,12 @@ class CheckoutOrderService
             $cityLabelAr = $city->getTranslation('name', 'ar', false);
 
             $billing = [
+                'name' => $fullName,
                 'first_name' => $contact['first_name'],
                 'last_name' => $contact['last_name'],
                 'email' => $contact['email'],
                 'phone' => $contact['phone'] ?? '',
+                'address' => $shippingIn['address'],
                 'city' => $cityLabelEn,
                 'city_slug' => $city->slug,
                 'country' => $shippingIn['country'],
