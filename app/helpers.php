@@ -33,23 +33,22 @@ if (! function_exists('ferro_public_url')) {
         }
 
         $normalized = ltrim(str_replace('\\', '/', $path), '/');
-        $root = ferro_request_asset_root();
 
-        if (Str::startsWith($path, 'images/')) {
-            return $root.'/'.$normalized;
+        if (Str::startsWith($normalized, 'images/')) {
+            return asset($normalized);
         }
 
         if (Str::startsWith($normalized, 'storage/')) {
-            return $root.'/'.$normalized;
+            return asset($normalized);
         }
 
-        return $root.'/storage/'.$normalized;
+        return asset('storage/'.$normalized);
     }
 }
 
 if (! function_exists('ferro_money')) {
     /**
-     * Format an amount for display (e.g. 1,234.56 EGP).
+     * Format an amount for display (e.g. 1,234.56 LE).
      */
     function ferro_money(float|string|null $amount, ?string $currency = null): string
     {

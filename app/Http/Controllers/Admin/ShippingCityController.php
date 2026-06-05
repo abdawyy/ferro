@@ -64,7 +64,7 @@ class ShippingCityController extends Controller
             'name_ar'         => 'nullable|string|max:200',
             'slug'            => $slugRule,
             'shipping_price'  => 'required|numeric|min:0',
-            'currency'        => 'required|string|size:3',
+            'currency'        => 'required|string|in:EGP',
             'sort_order'      => 'integer|min:0',
             'is_active'       => 'boolean',
         ]);

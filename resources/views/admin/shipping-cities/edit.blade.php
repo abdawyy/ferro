@@ -63,9 +63,7 @@
                 <div class="form-group">
                     <label class="form-label" for="currency">Currency *</label>
                     <select id="currency" name="currency" class="form-input form-select" required>
-                        @foreach(['EGP' => 'EGP', 'USD' => 'USD'] as $val => $label)
-                        <option value="{{ $val }}" {{ old('currency', $city->currency ?? 'EGP') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
+                        <option value="EGP" {{ old('currency', $city->currency ?? 'EGP') === 'EGP' ? 'selected' : '' }}>LE (Egyptian Pound)</option>
                     </select>
                 </div>
                 <div class="form-group">

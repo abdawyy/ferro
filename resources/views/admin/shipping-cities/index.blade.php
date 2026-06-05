@@ -38,7 +38,7 @@
                         @endif
                     </td>
                     <td class="mono text-muted">{{ $city->slug }}</td>
-                    <td style="text-align:right;" class="mono">{{ number_format((float) $city->shipping_price, 2) }} {{ $city->currency }}</td>
+                    <td style="text-align:right;" class="mono">{{ ferro_money($city->shipping_price, $city->currency) }}</td>
                     <td style="text-align:center;">{{ $city->sort_order }}</td>
                     <td>
                         @if($city->is_active)

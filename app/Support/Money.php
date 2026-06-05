@@ -12,10 +12,9 @@ final class Money
         $n = number_format((float) $amount, 2);
 
         return match (strtoupper((string) ($currency ?? 'EGP'))) {
-            'EGP', 'LE' => "{$n} LE",
-            'USD' => "{$n} USD",
+            'EGP', 'LE', 'USD' => "{$n} LE",
             'AED' => "{$n} AED",
-            default => "{$n} ".strtoupper((string) $currency),
+            default => "{$n} LE",
         };
     }
 }

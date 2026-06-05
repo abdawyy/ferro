@@ -40,6 +40,16 @@ use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+// Public uploads (products/gallery). Hostinger often has no working public/storage symlink;
+// Laravel must serve these from storage/app/public (visibility: public).
+Route::get('/storage/{path}', function (string $path): BinaryFileResponse {
+    $path = str_replace(['..', '\\'], ['', '/'], $path);
+    abort_unless($path !== '' && Storage::disk('public')->exists($path), 404);
+
+    return Storage::disk('public')->response($path);
+})->where('path', '.*')->name('storage.public');
 
 // ── Language toggle ────────────────────────────────────────────────────────
 Route::get('/lang/{locale}', [LanguageController::class, 'switch'])

@@ -33,7 +33,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -41,8 +41,16 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => (static function (): string {
+                $base = rtrim((string) env('APP_URL', 'http://localhost'), '/');
+                if ($base !== '' && ! str_starts_with($base, 'http://') && ! str_starts_with($base, 'https://')) {
+                    $base = 'https://'.$base;
+                }
+
+                return $base.'/storage';
+            })(),
             'visibility' => 'public',
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Models\ContactSetting;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $appUrl = rtrim((string) config('app.url'), '/');
+        if ($appUrl !== '' && ! Str::startsWith($appUrl, ['http://', 'https://'])) {
+            URL::useOrigin('https://'.$appUrl);
+        }
+
         // Admin product routes use `{product}` by id; include soft-deleted so staff can edit / restore.
         Route::bind('product', function (string $value) {
             return Product::withTrashed()->whereKey($value)->firstOrFail();

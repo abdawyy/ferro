@@ -30,7 +30,7 @@ return [
     | Loyalty programme
     */
     'loyalty' => [
-        'points_per_currency_unit' => 1,   // 1 point per 1 SAR/USD spent
+        'points_per_currency_unit' => 1,   // 1 point per 1 LE spent
         'welcome_bonus' => 100,
     ],
 

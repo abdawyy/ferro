@@ -241,6 +241,7 @@ class ProductController extends Controller
             'is_best_seller' => $request->boolean('is_best_seller'),
             'sort_order' => $request->input('sort_order', 0),
             'category_id' => $request->input('category_id') ?: null,
+            'currency' => 'EGP',
         ];
     }
 }
