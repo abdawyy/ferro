@@ -40,6 +40,8 @@
 
 <p><strong>Who this document is for:</strong> brand owners, operations managers, and customer-support leads who need a single reference for what the platform does and how day-to-day tasks are performed in the admin area and on the public website.</p>
 
+<p class="muted"><strong>For developers &amp; AI assistants:</strong> a technical companion file <code>AGENTS.md</code> in the project root describes architecture, routes, models, and deployment conventions in detail.</p>
+
 <h2>Contents</h2>
 <ol>
     <li>Public website overview</li>
@@ -50,7 +52,8 @@
     <li>Products, categories &amp; shop configuration</li>
     <li>Orders &amp; fulfilment</li>
     <li>Customers, leads &amp; quiz insights</li>
-    <li>Storefront content &amp; contact settings</li>
+    <li>Newsletter popup &amp; email campaigns</li>
+    <li>Storefront content, SEO &amp; images</li>
     <li>Automated emails (what customers and staff receive)</li>
     <li>Technical notes for IT / hosting</li>
 </ol>
@@ -65,12 +68,15 @@
     <tr><td>Shop</td><td><code>/shop</code></td><td>Product listing with filters driven by admin “shop quick filters”.</td></tr>
     <tr><td>Product page</td><td><code>/shop/{slug}</code></td><td>Product detail, pricing, add to cart.</td></tr>
     <tr><td>Cart</td><td><code>/cart</code></td><td>Review cart; proceed to checkout.</td></tr>
-    <tr><td>Checkout</td><td><code>/checkout</code></td><td>Three-step checkout (see section 3).</td></tr>
+    <tr><td>Checkout</td><td><code>/checkout</code></td><td>Three-step checkout (see section 2).</td></tr>
     <tr><td>About</td><td><code>/about</code></td><td>Brand narrative.</td></tr>
     <tr><td>Quiz</td><td><code>/quiz</code></td><td>Guided skin quiz; captures leads and notifies admin.</td></tr>
     <tr><td>Contact</td><td><code>/contact</code></td><td>Contact page (details from admin contact settings).</td></tr>
     <tr><td>Legal &amp; CMS</td><td><code>/privacy-policy</code>, <code>/terms-of-service</code>, <code>/return-policy</code>, <code>/pages/{slug}</code></td><td>Editable legal pages and additional CMS pages.</td></tr>
+    <tr><td>Order tracking</td><td><code>/orders/track/{order}</code></td><td>Guest-friendly order status lookup (signed link).</td></tr>
 </table>
+<h3>Newsletter popup (storefront)</h3>
+<p>When enabled in admin (<em>Newsletter &amp; Popup</em>), a timed modal appears on storefront pages after a configurable delay (default 5 seconds). Visitors who subscribe receive a <strong>unique coupon code by email</strong>. The popup respects dismiss/subscribe state in the browser so repeat visitors are not nagged. Disable the popup entirely from admin without code changes.</p>
 
 <div class="page-break"></div>
 <h2>2. Customer shopping &amp; checkout</h2>
@@ -102,6 +108,7 @@
     <li>List of the customer’s orders with status.</li>
     <li>Order detail at <code>/orders/{orderNumber}</code> for tracking information you expose on the storefront template.</li>
     <li><strong>Invoice download</strong> at <code>/invoices/{orderNumber}</code> — regenerates the latest PDF template and downloads <code>FERRO_Invoice_…</code>.</li>
+    <li><strong>Cancel order</strong> and <strong>return request</strong> actions where order status and policy allow (admin reviews returns in the order screen).</li>
 </ul>
 <div class="box"><strong>Note:</strong> If a user account is marked as an administrator, visiting <code>/account</code> redirects them to the admin dashboard instead.</div>
 
@@ -113,6 +120,8 @@
 <p>When a product is in <strong>coming soon</strong> status, customers can signal interest for that SKU. When an administrator changes the product to <strong>active</strong>, the system can notify matching waitlist leads by email (release campaign).</p>
 <h3>Skin quiz</h3>
 <p>The quiz captures preferences and contact details. Each submission notifies the admin inbox and stores structured data under <em>Skin Quiz</em> in admin for review and follow-up.</p>
+<h3>Newsletter subscribers vs. general leads</h3>
+<p>Popup newsletter sign-ups are stored separately under <em>Newsletter &amp; Popup</em> (with coupon codes) and also sync to the leads table with source “newsletter” for unified CRM visibility.</p>
 
 <div class="page-break"></div>
 <h2>5. Admin portal — access &amp; dashboard</h2>
@@ -120,6 +129,12 @@
 <p>Administrators sign in with the same <code>/login</code> page as customers, then use the <strong>Admin</strong> area (URL prefix <code>/admin</code>). Only users with the administrator flag may access these routes.</p>
 <h3>Admin language</h3>
 <p>Admin UI can be switched between English and Arabic via <code>/admin/lang/{locale}</code> without affecting the storefront locale.</p>
+<h3>Sidebar sections</h3>
+<ul>
+    <li><strong>Core</strong> — Dashboard, Products, Categories, Shop filters, Shipping (EG), Storefront contact, Storefront pages, Storefront SEO, Storefront images, Orders.</li>
+    <li><strong>Customers</strong> — Users, Administrators, Leads &amp; Waitlist, Newsletter &amp; Popup, Skin Quiz.</li>
+    <li><strong>Help</strong> — Stakeholder manual (PDF download).</li>
+</ul>
 <h3>Dashboard</h3>
 <p>The home admin screen summarises:</p>
 <ul>
@@ -136,7 +151,7 @@
 <h3>Products</h3>
 <ul>
     <li>Create, edit, archive, and <strong>restore</strong> soft-deleted products.</li>
-    <li>Manage <strong>featured image</strong> and <strong>gallery</strong> images (upload and remove individual gallery entries).</li>
+    <li>Manage <strong>featured image</strong> and <strong>gallery</strong> images (upload and remove individual gallery entries). Images are stored under <code>public/uploads/products/</code> for reliable delivery on shared hosting.</li>
     <li>Set <strong>status</strong> (e.g. <em>coming soon</em>, <em>active</em>, <em>out of stock</em>, <em>archived</em>) — controls visibility on the shop and whether purchases are allowed.</li>
     <li>Stock, SKU, bilingual names/descriptions, pricing, and subscription flags as implemented on the edit form.</li>
 </ul>
@@ -152,7 +167,7 @@
 <h3>Order list</h3>
 <p>Under <em>Orders</em>, filter by status or search by order number, customer email, or name. Status counts help prioritise work queues.</p>
 <h3>Order detail</h3>
-<p>Open an order to see line items, addresses, payment state, notes, and timestamps.</p>
+<p>Open an order to see line items, addresses, payment state, notes, timestamps, and customer return requests.</p>
 <h3>Updating status &amp; shipping</h3>
 <p>Use the status form to move orders through your operational workflow, for example:</p>
 <table class="steps">
@@ -164,6 +179,8 @@
     <tr><td>Cancelled / Refunded</td><td>Exception paths for support.</td></tr>
 </table>
 <p>You may record <strong>tracking number</strong>, <strong>carrier</strong>, and internal <strong>admin notes</strong> on the same form where applicable.</p>
+<h3>Return requests</h3>
+<p>When a customer submits a return from their account, review and approve or reject from the order detail screen.</p>
 <h3>Invoice from admin</h3>
 <p>Download the customer invoice PDF from the order screen for finance or customer service.</p>
 
@@ -177,19 +194,52 @@
 <h3>Administrators</h3>
 <p>Create staff accounts and assign admin privileges from the dedicated administrators section.</p>
 <h3>Leads &amp; waitlist</h3>
-<p>Review captured emails, sources, priorities, and waitlist flags. Export CSV for campaigns.</p>
+<p>Review captured emails, sources, priorities, and waitlist flags. Export CSV for campaigns. Manually add waitlist entries from admin when needed.</p>
 <h3>Skin quiz responses</h3>
 <p>Open each quiz session to see answers and recommended routines — useful for concierge sales or dermatologist partnerships.</p>
 
 <div class="page-break"></div>
-<h2>9. Storefront content &amp; contact settings</h2>
+<h2>9. Newsletter popup &amp; email campaigns</h2>
+<p>All newsletter tools live under <strong>Newsletter &amp; Popup</strong> in the admin sidebar. Sub-pages include a <strong>← Back to Newsletter</strong> link to return to the main settings hub.</p>
+<h3>Popup settings (main hub)</h3>
+<ul>
+    <li><strong>Show popup on storefront</strong> — master on/off switch.</li>
+    <li><strong>Delay (seconds)</strong> — how long after page load before the modal appears (default 5).</li>
+    <li><strong>Bilingual copy</strong> — title, message, button label, and success message (EN + AR).</li>
+    <li><strong>Discount</strong> — percentage off, coupon code prefix (e.g. FERRO), and validity in days.</li>
+</ul>
+<p>On subscribe, the visitor receives a <strong>welcome email with a unique coupon code</strong>. Subscribers are added to the newsletter list and synced to leads.</p>
+<h3>Subscribers</h3>
+<p>View active and unsubscribed emails, export CSV, and jump to campaign creation. Unsubscribe links in campaign emails use <code>/newsletter/unsubscribe</code>.</p>
+<h3>Campaigns</h3>
+<ol>
+    <li>Click <strong>New campaign</strong> — enter bilingual subject and body (HTML supported in body fields).</li>
+    <li>Optionally attach a <strong>featured product</strong> for rich email layout.</li>
+    <li>Choose recipients: <strong>all active subscribers</strong> or a selected subset.</li>
+    <li>Save as <strong>draft</strong>, preview on the campaign detail page, then <strong>Send now</strong> when ready.</li>
+</ol>
+<div class="box"><strong>Tip:</strong> Send a test campaign to a small internal list first. Once sent, a campaign cannot be unsent — create a new campaign for corrections.</div>
+
+<div class="page-break"></div>
+<h2>10. Storefront content, SEO &amp; images</h2>
 <h3>Storefront contact</h3>
 <p>Edit support email, phone, social links, and related fields used in the footer, contact page, and transactional email footers.</p>
 <h3>Storefront pages (CMS)</h3>
 <p>Create and edit additional content pages (slug-based URLs under <code>/pages/{slug}</code>) plus fixed legal routes for privacy, terms, and returns — all manageable without code deploys.</p>
+<h3>Storefront SEO</h3>
+<p>Per-page meta titles, descriptions, and keywords in English and Arabic for home, shop, product templates, cart, checkout, account, legal pages, and more. Empty fields fall back to sensible defaults configured in the application.</p>
+<h3>Storefront images</h3>
+<p>Upload or replace site visuals without a developer:</p>
+<ul>
+    <li><strong>Brand</strong> — custom logo, favicon, Apple touch icon, default social share (OG) image.</li>
+    <li><strong>Heroes</strong> — large header images for home, shop, about, contact, quiz, and story sections.</li>
+    <li><strong>Backdrops</strong> — page background textures per route (shop, cart, checkout, login, etc.).</li>
+    <li><strong>Quiz</strong> — step headers and option images for the skin quiz flow.</li>
+</ul>
+<p>Use <strong>Remove custom</strong> on any slot to revert to the built-in default asset. For logo and favicon, separate toggles control whether your <em>custom upload</em> replaces the default orange F mark and SVG favicon — if no custom file is uploaded, the default brand mark always shows.</p>
 
 <div class="page-break"></div>
-<h2>10. Automated emails (what customers and staff receive)</h2>
+<h2>11. Automated emails (what customers and staff receive)</h2>
 <table class="steps">
     <tr><th style="width:28%">Trigger</th><th>Audience</th><th>Content (high level)</th></tr>
     <tr><td>Order placed</td><td>Customer</td><td>Order confirmation; <strong>PDF invoice attached</strong> when generation succeeds.</td></tr>
@@ -199,16 +249,23 @@
     <tr><td>High-priority lead</td><td>Operations</td><td>VIP / high-priority lead alert.</td></tr>
     <tr><td>Quiz submitted</td><td>Operations</td><td>Quiz submission alert.</td></tr>
     <tr><td>Product released (coming soon → active)</td><td>Waitlist leads for that SKU</td><td>Waitlist release message.</td></tr>
+    <tr><td>Newsletter popup subscribe</td><td>Subscriber</td><td>Welcome email with <strong>unique coupon code</strong> and discount details.</td></tr>
+    <tr><td>Newsletter campaign sent</td><td>Active subscribers (all or selected)</td><td>Admin-authored bilingual campaign; optional featured product block.</td></tr>
 </table>
 <p>Email branding uses your global <strong>from</strong> name and address (<code>MAIL_FROM_*</code>). Ensure DNS and provider authentication (SPF/DKIM) are configured in production to maximise deliverability.</p>
 
 <div class="page-break"></div>
-<h2>11. Technical notes for IT / hosting</h2>
+<h2>12. Technical notes for IT / hosting</h2>
 <ul>
-    <li><strong>Application URL</strong> — <code>APP_URL</code> must match the public site URL so links inside emails and PDFs resolve correctly.</li>
+    <li><strong>Application URL</strong> — <code>APP_URL</code> must match the public site URL so links inside emails, PDFs, and signed routes resolve correctly.</li>
     <li><strong>Mail transport</strong> — configure <code>MAIL_MAILER</code> and related variables (e.g. SMTP or Mailpit in development).</li>
     <li><strong>Admin alerts</strong> — set <code>FERRO_ADMIN_EMAIL</code> to a monitored shared inbox.</li>
     <li><strong>Queued mail (optional)</strong> — if <code>FERRO_MAIL_QUEUE=true</code>, run a Laravel queue worker or messages will remain pending.</li>
+    <li><strong>Database migrations</strong> — after deploying new features run <code>php artisan migrate</code> (newsletter, storefront media, and SEO tables require this).</li>
+    <li><strong>Uploaded files</strong> — product images live in <code>public/uploads/products/</code>; storefront media in <code>public/uploads/brand/</code>. Ensure these folders are writable on the server.</li>
+    <li><strong>Document root</strong> — on Hostinger, the repo root <code>.htaccess</code> may forward requests to <code>public/</code>; do not break that redirect when uploading files.</li>
+    <li><strong>Cache</strong> — after config or view changes on production: <code>php artisan config:clear && php artisan cache:clear && php artisan view:clear</code>.</li>
+    <li><strong>AI / developer reference</strong> — see <code>AGENTS.md</code> in the project root for routes, models, services, and coding conventions.</li>
     <li><strong>Updating this PDF</strong> — from the project root run <code>php artisan ferro:export-stakeholder-manual</code> to write <code>storage/app/FERRO_Stakeholder_Manual.pdf</code>, or while signed in as an admin open <code>{{ $appUrl }}/admin/documentation/stakeholder-manual.pdf</code> for an on-demand download.</li>
 </ul>
 
