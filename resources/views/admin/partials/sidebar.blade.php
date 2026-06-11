@@ -10,12 +10,14 @@
         ['name' => __('admin.nav.storefront_contact'), 'route' => 'admin.contact-settings.edit', 'icon' => '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>', 'match' => 'admin.contact-settings'],
         ['name' => __('admin.nav.storefront_pages'), 'route' => 'admin.pages.index', 'icon' => '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', 'match' => 'admin.pages'],
         ['name' => __('admin.nav.storefront_seo'), 'route' => 'admin.storefront-seo.edit', 'icon' => '<path d="M21 12a9 9 0 10-9 9 4 4 0 01-4-4 9 9 0 109-9 4 4 0 014 4z"/><circle cx="12" cy="12" r="3"/>', 'match' => 'admin.storefront-seo'],
+        ['name' => __('admin.nav.storefront_media'), 'route' => 'admin.storefront-media.edit', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', 'match' => 'admin.storefront-media'],
         ['name' => __('admin.nav.orders'),     'route' => 'admin.orders.index',   'icon' => '<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>',                                    'match' => 'admin.orders'],
 
         ['section' => __('admin.nav.section_customers')],
         ['name' => __('admin.nav.users'),      'route' => 'admin.users.index',    'icon' => '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',            'match' => 'admin.users'],
         ['name' => __('admin.nav.administrators'),'route' => 'admin.admins.index','icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', 'match' => 'admin.admins'],
         ['name' => __('admin.nav.leads_waitlist'),'route' => 'admin.leads.index','icon' => '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .82h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.13a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>', 'match' => 'admin.leads'],
+        ['name' => __('admin.nav.newsletter'),'route' => 'admin.newsletter.settings.edit','icon' => '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>', 'match' => 'admin.newsletter'],
         ['name' => __('admin.nav.skin_quiz'),'route' => 'admin.quiz-responses.index','icon' => '<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>', 'match' => 'admin.quiz-responses'],
 
         ['section' => __('admin.nav.section_help')],

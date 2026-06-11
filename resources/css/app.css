@@ -613,6 +613,11 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
     display: none !important;
 }
 
+/* Newsletter popup — inline z-index in blade too; this keeps it above nav + page sections */
+#ferro-newsletter-popup {
+    z-index: 99999 !important;
+}
+
 /* ── Site-wide route backdrop (partials/page-backdrop.blade.php) ─────────── */
 .ferro-page-backdrop {
     pointer-events: none;

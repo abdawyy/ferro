@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Product;
+use App\Support\ProductImageStorage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -26,3 +28,42 @@ Artisan::command('ferro:export-stakeholder-manual {--path= : Absolute path for t
     file_put_contents($path, $pdf->output());
     $this->info("Wrote: {$path}");
 })->purpose('Export the FERRO stakeholder manual PDF to disk (default: storage/app/FERRO_Stakeholder_Manual.pdf)');
+
+Artisan::command('ferro:migrate-product-images', function () {
+    $migrated = 0;
+
+    Product::withTrashed()->chunkById(50, function ($products) use (&$migrated) {
+        foreach ($products as $product) {
+            $changed = false;
+
+            if ($product->featured_image && ProductImageStorage::isLegacyStoragePath($product->featured_image)) {
+                $new = ProductImageStorage::migrateLegacyPath($product->featured_image, ProductImageStorage::FEATURED_DIR);
+                if ($new) {
+                    $product->featured_image = $new;
+                    $changed = true;
+                    $migrated++;
+                }
+            }
+
+            $gallery = $product->gallery_images ?? [];
+            foreach ($gallery as $i => $img) {
+                if (! ProductImageStorage::isLegacyStoragePath($img)) {
+                    continue;
+                }
+                $new = ProductImageStorage::migrateLegacyPath($img, ProductImageStorage::GALLERY_DIR);
+                if ($new) {
+                    $gallery[$i] = $new;
+                    $changed = true;
+                    $migrated++;
+                }
+            }
+
+            if ($changed) {
+                $product->gallery_images = $gallery;
+                $product->saveQuietly();
+            }
+        }
+    });
+
+    $this->info("Migrated {$migrated} image(s) to public/uploads.");
+})->purpose('Copy legacy storage product images into public/uploads for shared hosting');

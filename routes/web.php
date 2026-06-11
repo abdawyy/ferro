@@ -34,6 +34,7 @@ use App\Http\Controllers\CustomerOrderActionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\ProductController;
 use App\Models\Order;
@@ -42,8 +43,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-// Public uploads (products/gallery). Hostinger often has no working public/storage symlink;
-// Laravel must serve these from storage/app/public (visibility: public).
+// Legacy product images still under storage/app/public (before public/uploads migration).
 Route::get('/storage/{path}', function (string $path): BinaryFileResponse {
     $path = str_replace(['..', '\\'], ['', '/'], $path);
     abort_unless($path !== '' && Storage::disk('public')->exists($path), 404);
@@ -106,6 +106,10 @@ Route::prefix('api')->group(function () {
 
 // ── Lead capture ───────────────────────────────────────────────────────────
 Route::post('/waitlist', [LeadController::class, 'storeWaitlist'])->name('waitlist.store');
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
+    ->middleware('throttle:10,1')
+    ->name('newsletter.subscribe');
+Route::get('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 Route::post('/quiz/capture', [LeadController::class, 'storeQuizLead'])->name('quiz.capture');
 Route::post('/cart/abandon', [LeadController::class, 'trackAbandonedCart'])->name('cart.abandon');
 
@@ -206,6 +210,9 @@ Route::middleware(['auth', 'admin'])
         Route::get('storefront-seo', [Admin\StorefrontSeoController::class, 'edit'])->name('storefront-seo.edit');
         Route::put('storefront-seo', [Admin\StorefrontSeoController::class, 'update'])->name('storefront-seo.update');
 
+        Route::get('storefront-media', [Admin\StorefrontMediaController::class, 'edit'])->name('storefront-media.edit');
+        Route::put('storefront-media', [Admin\StorefrontMediaController::class, 'update'])->name('storefront-media.update');
+
         Route::resource('pages', Admin\PageController::class)->except(['show']);
         Route::post('products/{product}/images', [Admin\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('products/{product}/images/{index}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.delete');
@@ -242,4 +249,15 @@ Route::middleware(['auth', 'admin'])
         // Skin quiz submissions
         Route::get('quiz-responses', [Admin\QuizResponseController::class, 'index'])->name('quiz-responses.index');
         Route::get('quiz-responses/{quiz_session}', [Admin\QuizResponseController::class, 'show'])->name('quiz-responses.show');
+
+        // Newsletter & popup
+        Route::get('newsletter/settings', [Admin\NewsletterSettingController::class, 'edit'])->name('newsletter.settings.edit');
+        Route::put('newsletter/settings', [Admin\NewsletterSettingController::class, 'update'])->name('newsletter.settings.update');
+        Route::get('newsletter/subscribers', [Admin\NewsletterSubscriberController::class, 'index'])->name('newsletter.subscribers.index');
+        Route::get('newsletter/subscribers/export', [Admin\NewsletterSubscriberController::class, 'export'])->name('newsletter.subscribers.export');
+        Route::get('newsletter/campaigns', [Admin\NewsletterCampaignController::class, 'index'])->name('newsletter.campaigns.index');
+        Route::get('newsletter/campaigns/create', [Admin\NewsletterCampaignController::class, 'create'])->name('newsletter.campaigns.create');
+        Route::post('newsletter/campaigns', [Admin\NewsletterCampaignController::class, 'store'])->name('newsletter.campaigns.store');
+        Route::get('newsletter/campaigns/{campaign}', [Admin\NewsletterCampaignController::class, 'show'])->name('newsletter.campaigns.show');
+        Route::post('newsletter/campaigns/{campaign}/send', [Admin\NewsletterCampaignController::class, 'send'])->name('newsletter.campaigns.send');
     });

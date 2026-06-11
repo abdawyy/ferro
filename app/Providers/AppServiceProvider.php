@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\ContactSetting;
+use App\Models\NewsletterSetting;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -36,10 +37,14 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer(
-            ['layouts.app', 'contact', 'partials.footer', 'partials.social-follow-links', 'emails._layout', 'pdf.invoice'],
+            ['layouts.app', 'contact', 'partials.footer', 'partials.social-follow-links', 'partials.newsletter-popup', 'emails._layout', 'pdf.invoice'],
             function ($view): void {
                 $view->with('contactSetting', ContactSetting::current());
             }
         );
+
+        View::composer('partials.newsletter-popup', function ($view): void {
+            $view->with('newsletterSettings', NewsletterSetting::current());
+        });
     }
 }

@@ -28,8 +28,9 @@
 <body>
 
 <div class="cover">
-    @if(file_exists(public_path('images/brand/ferro-hex-logo.png')))
-        <img src="{{ public_path('images/brand/ferro-hex-logo.png') }}" alt="FERRO" style="height:48px;width:auto;margin-bottom:16px;">
+    @php $brandLogoPath = app(\App\Services\StorefrontMediaService::class)->visibleLogoAbsolutePath(); @endphp
+    @if($brandLogoPath)
+        <img src="{{ $brandLogoPath }}" alt="FERRO" style="height:48px;width:auto;margin-bottom:16px;">
     @endif
     <div class="cover-tag">Operations guide</div>
     <div class="cover-title">FERRO</div>

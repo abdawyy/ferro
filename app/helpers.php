@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Money;
+use App\Support\ProductImageStorage;
 use Illuminate\Support\Str;
 
 if (! function_exists('ferro_request_asset_root')) {
@@ -32,17 +33,9 @@ if (! function_exists('ferro_public_url')) {
             return $path;
         }
 
-        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+        $relative = ProductImageStorage::publicRelativePath($path);
 
-        if (Str::startsWith($normalized, 'images/')) {
-            return asset($normalized);
-        }
-
-        if (Str::startsWith($normalized, 'storage/')) {
-            return asset($normalized);
-        }
-
-        return asset('storage/'.$normalized);
+        return $relative ? asset($relative) : null;
     }
 }
 
@@ -53,6 +46,51 @@ if (! function_exists('ferro_money')) {
     function ferro_money(float|string|null $amount, ?string $currency = null): string
     {
         return Money::format($amount, $currency);
+    }
+}
+
+if (! function_exists('ferro_storefront_media')) {
+    /**
+     * Admin-overridable storefront image URL (heroes, logos, backdrops, quiz, etc.).
+     */
+    function ferro_storefront_media(string $key): ?string
+    {
+        return app(\App\Services\StorefrontMediaService::class)->url($key);
+    }
+}
+
+if (! function_exists('ferro_storefront_logo_enabled')) {
+    function ferro_storefront_logo_enabled(): bool
+    {
+        return app(\App\Services\StorefrontMediaService::class)->showLogo();
+    }
+}
+
+if (! function_exists('ferro_storefront_logo_url')) {
+    function ferro_storefront_logo_url(): ?string
+    {
+        return app(\App\Services\StorefrontMediaService::class)->visibleLogoUrl();
+    }
+}
+
+if (! function_exists('ferro_storefront_favicon_enabled')) {
+    function ferro_storefront_favicon_enabled(): bool
+    {
+        return app(\App\Services\StorefrontMediaService::class)->showFavicon();
+    }
+}
+
+if (! function_exists('ferro_storefront_favicon_url')) {
+    function ferro_storefront_favicon_url(): ?string
+    {
+        return app(\App\Services\StorefrontMediaService::class)->visibleFaviconUrl();
+    }
+}
+
+if (! function_exists('ferro_storefront_apple_touch_url')) {
+    function ferro_storefront_apple_touch_url(): ?string
+    {
+        return app(\App\Services\StorefrontMediaService::class)->visibleAppleTouchUrl();
     }
 }
 

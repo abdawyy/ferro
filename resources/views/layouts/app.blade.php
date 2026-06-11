@@ -22,7 +22,7 @@
     <meta property="og:type"        content="@yield('og_type', 'website')">
     <meta property="og:title"       content="@yield('og_title', 'FERRO — Forged from Iron, Polished by Luxury')">
     <meta property="og:description" content="@yield('og_description', 'Premium natural grooming essentials engineered for the high-performance man.')">
-    <meta property="og:image"       content="@yield('og_image', asset('images/ferro-og-default.png'))">
+    <meta property="og:image"       content="@yield('og_image', ferro_storefront_media('brand.og_default') ?? asset('images/ferro-og-default.png'))">
     <meta property="og:url"         content="{{ url()->current() }}">
     <meta property="og:site_name"   content="FERRO">
     <meta property="og:locale"      content="{{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en_US' }}">
@@ -32,7 +32,7 @@
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="@yield('og_title', 'FERRO')">
     <meta name="twitter:description" content="@yield('og_description', 'Premium mens grooming.')">
-    <meta name="twitter:image"       content="@yield('og_image', asset('images/ferro-og-default.png'))">
+    <meta name="twitter:image"       content="@yield('og_image', ferro_storefront_media('brand.og_default') ?? asset('images/ferro-og-default.png'))">
     <meta name="twitter:site"        content="@ferrogrooming">
 
     {{-- ── Schema.org — Organization (sitewide) ─────────────────────── --}}
@@ -43,7 +43,6 @@
             '@type' => 'Organization',
             'name' => 'FERRO',
             'url' => url('/'),
-            'logo' => asset('images/brand/ferro-hex-logo.png'),
             'description' => 'Premium nature-powered grooming essentials engineered for the high-performance man.',
             'sameAs' => $contactSetting->sameAsLinks(),
             'contactPoint' => [
@@ -52,6 +51,9 @@
                 'email' => $contactSetting->support_email,
             ],
         ];
+        if (ferro_storefront_logo_url()) {
+            $ferroOrg['logo'] = ferro_storefront_logo_url();
+        }
     @endphp
     {!! json_encode($ferroOrg, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) !!}
     </script>
@@ -63,7 +65,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preload" as="image" href="{{ asset(config('ferro.page_backgrounds.heroes.home')) }}">
+    <link rel="preload" as="image" href="{{ ferro_storefront_media('hero.home') ?? asset(config('ferro.page_backgrounds.heroes.home')) }}">
 
     {{-- ── CDN: Google Fonts ──────────────────────────────────────────── --}}
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -74,9 +76,9 @@
     {{-- ── CDN: Swiper (carousel / slider) ───────────────────────────── --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
-    {{-- ── Favicon ─────────────────────────────────────────────────────── --}}
-    <link rel="icon"             type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+    {{-- ── Favicon (default orange F; custom upload when enabled in admin) ── --}}
+    <link rel="icon" href="{{ ferro_storefront_favicon_url() }}">
+    <link rel="apple-touch-icon" href="{{ ferro_storefront_apple_touch_url() }}">
     <meta name="theme-color" content="#0A0A0A">
     <link rel="stylesheet" href="{{ asset('build/assets/app-CnFwdGPi.css') }}">
 <script type="module" src="{{ asset('build/assets/app-BaDZgPgy.js') }}"></script>
@@ -99,6 +101,8 @@
     </main>
 
     @include('partials.footer')
+
+    @include('partials.newsletter-popup')
 
     @stack('scripts')
 </body>

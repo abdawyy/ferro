@@ -47,7 +47,7 @@
 {{-- ── Hero Banner ──────────────────────────────────────────────────────── --}}
 <section class="relative pt-[72px] overflow-hidden">
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset(config('ferro.page_backgrounds.heroes.shop')) }}" alt=""
+        <img src="{{ ferro_storefront_media('hero.shop') ?? asset(config('ferro.page_backgrounds.heroes.shop')) }}" alt=""
              class="ferro-brand-photo w-full h-full object-cover object-right max-md:object-center opacity-55" aria-hidden="true" loading="eager" decoding="sync">
         <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/72 via-ferro-obsidian/88 to-ferro-black"></div>
     </div>

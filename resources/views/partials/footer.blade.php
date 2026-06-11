@@ -6,9 +6,11 @@
             {{-- Brand column --}}
             <div class="lg:col-span-1">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 mb-5">
-                    <svg class="w-7 h-7 text-ferro-orange" viewBox="0 0 32 32" fill="none">
-                        <path d="M4 4h24v6H12v4h14v6H12v8H4V4z" fill="currentColor"/>
-                    </svg>
+                    @if(ferro_storefront_logo_url())
+                    <img src="{{ ferro_storefront_logo_url() }}" alt="FERRO" class="h-7 w-auto max-w-[120px] object-contain">
+                    @else
+                    @include('partials.brand-mark-f', ['class' => 'w-7 h-7 text-ferro-orange'])
+                    @endif
                     <span class="font-display text-xl tracking-[0.2em] text-ferro-white uppercase">FERRO</span>
                 </a>
                 <p class="text-ferro-ash text-body-sm leading-relaxed mb-6">

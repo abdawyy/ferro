@@ -31,9 +31,9 @@
 
 {{-- Product Hero Card --}}
 <div style="background-color: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 2px; overflow: hidden; margin: 24px 0;">
-    @if($product->image_url)
+    @if($product->featured_image)
     <div style="background-color: #0A0A0A; text-align: center; padding: 20px;">
-        <img src="{{ $product->image_url }}" alt="{{ $t['product_name'] }}"
+        <img src="{{ ferro_public_url($product->featured_image) }}" alt="{{ $t['product_name'] }}"
              style="max-width: 220px; height: auto; display: inline-block;">
     </div>
     @endif

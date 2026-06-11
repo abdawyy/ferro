@@ -6,10 +6,10 @@ use App\Events\WaitlistReleased;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Support\ProductImageStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -55,8 +55,7 @@ class ProductController extends Controller
         // Handle featured image
         if ($request->hasFile('featured_image')) {
             $product->update([
-                'featured_image' => $request->file('featured_image')
-                    ->store('products', 'public'),
+                'featured_image' => ProductImageStorage::storeFeatured($request->file('featured_image')),
             ]);
         }
 
@@ -64,7 +63,7 @@ class ProductController extends Controller
         if ($request->hasFile('gallery')) {
             $gallery = [];
             foreach ($request->file('gallery') as $file) {
-                $gallery[] = $file->store('products/gallery', 'public');
+                $gallery[] = ProductImageStorage::storeGallery($file);
             }
             $product->update(['gallery_images' => $gallery]);
         }
@@ -86,18 +85,15 @@ class ProductController extends Controller
 
         // Replace featured image if new one uploaded
         if ($request->hasFile('featured_image')) {
-            if ($product->featured_image) {
-                Storage::disk('public')->delete($product->featured_image);
-            }
-            $data['featured_image'] = $request->file('featured_image')
-                ->store('products', 'public');
+            ProductImageStorage::delete($product->featured_image);
+            $data['featured_image'] = ProductImageStorage::storeFeatured($request->file('featured_image'));
         }
 
         // Append new gallery images
         if ($request->hasFile('gallery')) {
             $existing = $product->gallery_images ?? [];
             foreach ($request->file('gallery') as $file) {
-                $existing[] = $file->store('products/gallery', 'public');
+                $existing[] = ProductImageStorage::storeGallery($file);
             }
             $data['gallery_images'] = $existing;
         }
@@ -143,7 +139,7 @@ class ProductController extends Controller
     {
         $request->validate(['image' => 'required|image|max:5120']);
 
-        $path = $request->file('image')->store('products/gallery', 'public');
+        $path = ProductImageStorage::storeGallery($request->file('image'));
 
         $gallery = $product->gallery_images ?? [];
         $gallery[] = $path;
@@ -168,7 +164,7 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Image not found.'], 404);
         }
 
-        Storage::disk('public')->delete($gallery[$index]);
+        ProductImageStorage::delete($gallery[$index]);
         array_splice($gallery, $index, 1);
         $product->update(['gallery_images' => array_values($gallery)]);
 

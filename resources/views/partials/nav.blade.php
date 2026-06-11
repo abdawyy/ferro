@@ -23,12 +23,18 @@
 
             {{-- ── Logotype (shrink on narrow screens so actions + hamburger stay visible) ── --}}
             <a href="{{ route('home') }}" class="flex min-w-0 shrink items-center gap-2 sm:gap-3 group" aria-label="FERRO Home">
-                <svg class="w-7 h-7 sm:w-8 sm:h-8 shrink-0 text-ferro-orange group-hover:scale-110 transition-transform duration-300"
-                     viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M4 4h24v6H12v4h14v6H12v8H4V4z" fill="currentColor"/>
-                    {{-- Iron "F" letterform --}}
-                </svg>
-                <span class="font-display text-lg sm:text-2xl font-semibold tracking-[0.12em] sm:tracking-[0.2em] text-ferro-white uppercase truncate">
+                @if(ferro_storefront_logo_url())
+                <img
+                    src="{{ ferro_storefront_logo_url() }}"
+                    alt="FERRO"
+                    class="h-7 sm:h-9 w-auto max-w-[140px] shrink-0 object-contain group-hover:opacity-90 transition-opacity duration-300"
+                    width="140"
+                    height="36"
+                >
+                @else
+                @include('partials.brand-mark-f', ['class' => 'w-7 h-7 sm:w-8 sm:h-8 shrink-0 text-ferro-orange group-hover:scale-110 transition-transform duration-300'])
+                @endif
+                <span class="font-display text-lg sm:text-2xl font-semibold tracking-[0.12em] sm:tracking-[0.2em] text-ferro-white uppercase truncate hidden sm:inline">
                     FERRO
                 </span>
             </a>

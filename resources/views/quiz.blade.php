@@ -16,7 +16,7 @@
 <div class="relative min-h-screen flex flex-col pt-[72px] pb-16 sm:pb-20" x-data="ferroQuiz()">
 
     <div class="absolute inset-0 z-0 bg-ferro-black">
-        <img src="{{ asset(config('ferro.page_backgrounds.heroes.quiz')) }}" alt="" class="ferro-brand-photo w-full h-full object-cover object-center opacity-[0.22]" aria-hidden="true" loading="eager" decoding="async">
+        <img src="{{ ferro_storefront_media('hero.quiz') ?? asset(config('ferro.page_backgrounds.heroes.quiz')) }}" alt="" class="ferro-brand-photo w-full h-full object-cover object-center opacity-[0.22]" aria-hidden="true" loading="eager" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-b from-ferro-black/60 via-ferro-black/80 to-ferro-black"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(232,80,10,0.10)_0%,transparent_60%)]" aria-hidden="true"></div>
     </div>
@@ -216,6 +216,7 @@
 const FERRO_QUIZ_URL = '{{ route('quiz.capture') }}';
 const FERRO_LOCALE = @json(app()->getLocale());
 const FERRO_QUIZ_IS_AR = @json(app()->getLocale() === 'ar');
+const FERRO_QUIZ_IMAGES = @json(app(\App\Services\StorefrontMediaService::class)->quizImageMap());
 function ferroQuizEscapeHtml(text) {
     const d = document.createElement('div');
     d.textContent = text == null ? '' : String(text);
@@ -246,6 +247,19 @@ function ferroQuiz() {
         leadEmail: '',
         leadSubmitted: false,
         skinProfile: { label_en: '', label_ar: '', desc_en: '', desc_ar: '' },
+
+        init() {
+            if (typeof FERRO_QUIZ_IMAGES !== 'object') return;
+            this.questions.forEach((q, qi) => {
+                const stepKey = 'step.' + qi;
+                if (FERRO_QUIZ_IMAGES[stepKey]) q.step_img = FERRO_QUIZ_IMAGES[stepKey];
+                q.options.forEach((o, oi) => {
+                    const optKey = 'option.' + qi + '.' + oi;
+                    if (FERRO_QUIZ_IMAGES[optKey]) o.img = FERRO_QUIZ_IMAGES[optKey];
+                });
+            });
+        },
+
         questions: [
             {
                 step_label_en: 'Lifestyle',

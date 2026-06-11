@@ -89,11 +89,21 @@
             <a href="{{ url('/') }}" style="display:block;text-decoration:none;padding:28px 24px 24px;background-color:#0A0A0A;">
                 <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto;">
                     <tr>
-                        <td style="vertical-align:middle;padding-right:12px;">
-                            <span style="font-size:32px;font-weight:700;color:#E8500A;line-height:1;font-family:Georgia,'Times New Roman',serif;">F</span>
-                        </td>
-                        <td style="vertical-align:middle;">
-                            <span style="font-size:18px;font-weight:700;letter-spacing:0.35em;color:#F5F2EE;font-family:Georgia,'Times New Roman',serif;">FERRO</span>
+                        <td style="vertical-align:middle;text-align:center;">
+                            @if(ferro_storefront_logo_url())
+                            <img src="{{ ferro_storefront_logo_url() }}" alt="FERRO" style="max-height:48px;width:auto;display:inline-block;">
+                            @else
+                            <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto;">
+                                <tr>
+                                    <td style="vertical-align:middle;padding-right:12px;">
+                                        <span style="font-size:32px;font-weight:700;color:#E8500A;line-height:1;font-family:Georgia,'Times New Roman',serif;">F</span>
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        <span style="font-size:18px;font-weight:700;letter-spacing:0.35em;color:#F5F2EE;font-family:Georgia,'Times New Roman',serif;">FERRO</span>
+                                    </td>
+                                </tr>
+                            </table>
+                            @endif
                         </td>
                     </tr>
                 </table>

@@ -42,7 +42,7 @@
     {{-- Background image with parallax --}}
     <div class="absolute inset-0 z-0" id="hero-bg">
         <img
-            src="{{ asset(config('ferro.page_backgrounds.heroes.home')) }}"
+            src="{{ ferro_storefront_media('hero.home') ?? asset(config('ferro.page_backgrounds.heroes.home')) }}"
             alt=""
             class="ferro-brand-photo w-full h-full object-cover object-right max-md:object-center"
             aria-hidden="true"
@@ -200,7 +200,7 @@
             <div class="relative reveal {{ $isAr ? 'order-2' : 'order-1' }}">
                 <div class="relative aspect-[4/5] overflow-hidden" style="border-radius: 2px;">
                     <img
-                        src="{{ asset(config('ferro.page_backgrounds.heroes.brand_story')) }}"
+                        src="{{ ferro_storefront_media('hero.brand_story') ?? asset(config('ferro.page_backgrounds.heroes.brand_story')) }}"
                         alt="{{ $isAr ? 'صورة تجسّد قوة فيرو' : 'FERRO — Power and refinement' }}"
                         class="ferro-brand-photo w-full h-full object-cover"
                         loading="lazy"
