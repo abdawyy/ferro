@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\StorefrontBrandSetting;
 use App\Models\StorefrontMedia;
 
 class StorefrontMediaService
