@@ -144,6 +144,7 @@ return [
 
     'newsletter' => [
         'settings_title' => 'النافذة المنبثقة للنشرة',
+        'back_to_newsletter' => '← العودة للنشرة',
         'settings_saved' => 'تم حفظ إعدادات النشرة.',
         'view_subscribers' => 'عرض المشتركين',
         'popup_control' => 'التحكم بالنافذة',

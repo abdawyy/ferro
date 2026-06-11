@@ -144,6 +144,7 @@ return [
 
     'newsletter' => [
         'settings_title' => 'Newsletter popup',
+        'back_to_newsletter' => '← Back to Newsletter',
         'settings_saved' => 'Newsletter settings saved.',
         'view_subscribers' => 'View subscribers',
         'popup_control' => 'Popup control',

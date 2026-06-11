@@ -18,7 +18,8 @@
             @endif
         </div>
     </div>
-    <div style="display:flex; gap:8px;">
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ route('admin.newsletter.settings.edit') }}" class="btn btn-secondary">{{ __('admin.newsletter.back_to_newsletter') }}</a>
         <a href="{{ route('admin.newsletter.campaigns.index') }}" class="btn btn-secondary">{{ __('admin.orders.back') }}</a>
         @if(! $campaign->isSent())
         <form method="POST" action="{{ route('admin.newsletter.campaigns.send', $campaign) }}" onsubmit="return confirm(@json(__('admin.newsletter.send_confirm')));">

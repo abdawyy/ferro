@@ -12,9 +12,12 @@
     @csrf
 
     <div class="page-header" style="align-items: flex-start;">
-        <h1>{{ __('admin.newsletter.new_campaign') }}</h1>
+        <div>
+            <a href="{{ route('admin.newsletter.settings.edit') }}" class="btn btn-secondary" style="margin-bottom: 12px;">{{ __('admin.newsletter.back_to_newsletter') }}</a>
+            <h1>{{ __('admin.newsletter.new_campaign') }}</h1>
+        </div>
         <div style="display:flex; gap:8px;">
-            <a href="{{ route('admin.newsletter.campaigns.index') }}" class="btn btn-secondary">{{ __('admin.contact_settings.cancel') }}</a>
+            <a href="{{ route('admin.newsletter.campaigns.index') }}" class="btn btn-secondary">{{ __('admin.orders.back') }}</a>
             <button type="submit" class="btn btn-primary">{{ __('admin.newsletter.save_draft') }}</button>
         </div>
     </div>

@@ -8,8 +8,11 @@
 
 @section('content')
 
-<div class="page-header">
-    <h1>{{ __('admin.newsletter.campaigns_title') }}</h1>
+<div class="page-header" style="align-items: flex-start;">
+    <div>
+        <a href="{{ route('admin.newsletter.settings.edit') }}" class="btn btn-secondary" style="margin-bottom: 12px;">{{ __('admin.newsletter.back_to_newsletter') }}</a>
+        <h1>{{ __('admin.newsletter.campaigns_title') }}</h1>
+    </div>
     <a href="{{ route('admin.newsletter.campaigns.create') }}" class="btn btn-primary">{{ __('admin.newsletter.new_campaign') }}</a>
 </div>
 

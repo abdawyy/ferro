@@ -8,10 +8,13 @@
 
 @section('content')
 
-<div class="page-header">
-    <h1>{{ __('admin.newsletter.subscribers_title') }}</h1>
-    <div style="display:flex; gap:8px;">
-        <a href="{{ route('admin.newsletter.settings.edit') }}" class="btn btn-secondary">{{ __('admin.newsletter.settings_title') }}</a>
+<div class="page-header" style="align-items: flex-start;">
+    <div>
+        <a href="{{ route('admin.newsletter.settings.edit') }}" class="btn btn-secondary" style="margin-bottom: 12px;">{{ __('admin.newsletter.back_to_newsletter') }}</a>
+        <h1>{{ __('admin.newsletter.subscribers_title') }}</h1>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ route('admin.newsletter.campaigns.index') }}" class="btn btn-secondary">{{ __('admin.newsletter.campaigns_title') }}</a>
         <a href="{{ route('admin.newsletter.campaigns.create') }}" class="btn btn-primary">{{ __('admin.newsletter.new_campaign') }}</a>
         <a href="{{ route('admin.newsletter.subscribers.export') }}" class="btn btn-secondary">{{ __('admin.dashboard.export_csv') }}</a>
     </div>
