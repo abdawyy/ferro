@@ -34,7 +34,7 @@
                 @else
                 @include('partials.brand-mark-f', ['class' => 'w-7 h-7 sm:w-8 sm:h-8 shrink-0 text-ferro-orange group-hover:scale-110 transition-transform duration-300'])
                 @endif
-                <span class="font-display text-lg sm:text-2xl font-semibold tracking-[0.12em] sm:tracking-[0.2em] text-ferro-white uppercase truncate hidden sm:inline">
+                <span class="font-display text-lg sm:text-2xl font-semibold tracking-[0.12em] sm:tracking-[0.2em] text-ferro-white uppercase truncate">
                     FERRO
                 </span>
             </a>

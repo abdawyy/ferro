@@ -81,14 +81,14 @@ if (! function_exists('ferro_storefront_favicon_enabled')) {
 }
 
 if (! function_exists('ferro_storefront_favicon_url')) {
-    function ferro_storefront_favicon_url(): ?string
+    function ferro_storefront_favicon_url(): string
     {
         return app(\App\Services\StorefrontMediaService::class)->visibleFaviconUrl();
     }
 }
 
 if (! function_exists('ferro_storefront_apple_touch_url')) {
-    function ferro_storefront_apple_touch_url(): ?string
+    function ferro_storefront_apple_touch_url(): string
     {
         return app(\App\Services\StorefrontMediaService::class)->visibleAppleTouchUrl();
     }

@@ -74,7 +74,7 @@
                             x-model="email"
                             required
                             :placeholder="config.emailPlaceholder"
-                            class="w-full px-4 py-3 bg-ferro-charcoal/40 border border-ferro-charcoal text-ferro-off-white text-sm focus:outline-none focus:border-ferro-orange"
+                            class="newsletter-popup-email w-full px-4 py-3 text-sm focus:outline-none"
                         >
                         <p x-show="error" x-text="error" class="text-red-400 text-xs"></p>
                         <button type="submit" class="btn-primary w-full" :disabled="loading">
@@ -94,6 +94,35 @@
         </div>
     </template>
 </div>
+
+@push('head')
+<style>
+    #ferro-newsletter-popup .newsletter-popup-email {
+        background-color: #2A2A2A !important;
+        border: 1px solid #3A3A3A;
+        color: #F5F2EE !important;
+        -webkit-text-fill-color: #F5F2EE !important;
+        caret-color: #F5F2EE;
+    }
+    #ferro-newsletter-popup .newsletter-popup-email::placeholder {
+        color: #6B6B6B;
+        opacity: 1;
+    }
+    #ferro-newsletter-popup .newsletter-popup-email:focus {
+        border-color: #E8500A;
+        box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.15);
+    }
+    #ferro-newsletter-popup .newsletter-popup-email:-webkit-autofill,
+    #ferro-newsletter-popup .newsletter-popup-email:-webkit-autofill:hover,
+    #ferro-newsletter-popup .newsletter-popup-email:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px #2A2A2A inset !important;
+        box-shadow: 0 0 0 1000px #2A2A2A inset !important;
+        -webkit-text-fill-color: #F5F2EE !important;
+        caret-color: #F5F2EE;
+        border: 1px solid #3A3A3A;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>

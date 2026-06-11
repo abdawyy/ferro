@@ -76,8 +76,9 @@
     {{-- ── CDN: Swiper (carousel / slider) ───────────────────────────── --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
-    {{-- ── Favicon (default orange F; custom upload when enabled in admin) ── --}}
-    <link rel="icon" href="{{ ferro_storefront_favicon_url() }}">
+    {{-- ── Favicon (orange F — always on; works on shared hosting) ─────── --}}
+    <link rel="icon" type="image/svg+xml" href="{{ ferro_storefront_favicon_url() }}">
+    <link rel="shortcut icon" href="{{ ferro_storefront_favicon_url() }}">
     <link rel="apple-touch-icon" href="{{ ferro_storefront_apple_touch_url() }}">
     <meta name="theme-color" content="#0A0A0A">
     <link rel="stylesheet" href="{{ asset('build/assets/app-CnFwdGPi.css') }}">

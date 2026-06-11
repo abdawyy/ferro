@@ -229,20 +229,28 @@ class StorefrontMediaService
 
     public function showLogo(): bool
     {
-        if (! $this->brandSettingsTableExists()) {
+        try {
+            if (! $this->brandSettingsTableExists()) {
+                return false;
+            }
+
+            return (bool) StorefrontBrandSetting::current()->show_logo;
+        } catch (\Throwable) {
             return false;
         }
-
-        return (bool) StorefrontBrandSetting::current()->show_logo;
     }
 
     public function showFavicon(): bool
     {
-        if (! $this->brandSettingsTableExists()) {
+        try {
+            if (! $this->brandSettingsTableExists()) {
+                return false;
+            }
+
+            return (bool) StorefrontBrandSetting::current()->show_favicon;
+        } catch (\Throwable) {
             return false;
         }
-
-        return (bool) StorefrontBrandSetting::current()->show_favicon;
     }
 
     /** Custom uploaded logo only; null = use default F mark in views. */
@@ -260,23 +268,39 @@ class StorefrontMediaService
     }
 
     /** Always returns a favicon (custom when enabled, otherwise default SVG). */
-    public function visibleFaviconUrl(): ?string
+    public function visibleFaviconUrl(): string
     {
-        if ($this->showFavicon() && StorefrontMedia::pathFor('brand.favicon') !== null) {
-            return $this->url('brand.favicon');
+        try {
+            if ($this->showFavicon() && StorefrontMedia::pathFor('brand.favicon') !== null) {
+                $custom = $this->url('brand.favicon');
+                if ($custom) {
+                    return $custom;
+                }
+            }
+        } catch (\Throwable) {
+            // fall through to default
         }
 
-        return ferro_public_url('favicon.svg') ?? asset('favicon.svg');
+        return ferro_request_asset_root().'/favicon.svg';
     }
 
     /** Always returns an Apple touch icon (custom when enabled, otherwise default). */
-    public function visibleAppleTouchUrl(): ?string
+    public function visibleAppleTouchUrl(): string
     {
-        if ($this->showFavicon() && StorefrontMedia::pathFor('brand.apple_touch') !== null) {
-            return $this->url('brand.apple_touch');
+        try {
+            if ($this->showFavicon() && StorefrontMedia::pathFor('brand.apple_touch') !== null) {
+                $custom = $this->url('brand.apple_touch');
+                if ($custom) {
+                    return $custom;
+                }
+            }
+        } catch (\Throwable) {
+            // fall through to default
         }
 
-        return ferro_public_url('images/apple-touch-icon.png') ?? asset('images/apple-touch-icon.png');
+        $default = ferro_public_url('images/apple-touch-icon.png');
+
+        return $default ?? ferro_request_asset_root().'/images/apple-touch-icon.png';
     }
 
     /** Absolute logo path for PDFs when logo is enabled. */
